@@ -20,11 +20,16 @@
   },
   "dependencies": {
     "expo": "^25.0.0",
+    "moment": "^2.21.0",
+    "qiscus-sdk-core": "git://github.com/qiscus/qiscus-sdk-web-core.git",
     "react": "16.2.0",
     "react-native": "0.52",
+    "react-native-i18n": "git+https://github.com/xcarpentier/ex-react-native-i18n.git",
+    "react-native-image-progress": "^1.1.0",
     "react-native-lightbox": "^0.7.0",
+    "react-native-progress": "^3.4.0",
     "react-native-qiscus-sdk": "git://github.com/qiscus/react-native-qiscus-sdk-js.git",
-    "react-native-vector-icons": "^4.5.0",
-    "qiscus-sdk-core": "git://github.com/qiscus/qiscus-sdk-web-core.git"
+    "react-native-router-flux": "^4.0.0-beta.28",
+    "react-native-vector-icons": "^4.5.0"
   }
 }

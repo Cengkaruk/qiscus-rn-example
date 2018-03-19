@@ -1,0 +1,31 @@
+export default {
+  'en': {
+    email: 'EMAIL',
+    displayName: 'DISPLAY NAME',
+    start: 'START',
+    key: 'KEY',
+    invalidEmail: 'Invalid Email',
+    loginFailed: 'Incorrect email or password',
+    invalidKey: 'Invalid Key',
+    invalidDisplayName: 'Invalid Display Name',
+    loading: 'Loading...',
+    conversations: 'Conversations',
+    online: 'online',
+    emptyRoom: 'Oops!!',
+    descriptionEmptyRoom: "You don't have any conversation.\nLet's send a message to your contact",
+    startChat: 'START CHAT',
+    emptyChat: 'Send a message!',
+    descriptionEmptyChat: 'Great discussion start from greeting\neach others first',
+    placeholdermessage: 'Type your message',
+    isFailed: 'message failed to send, ',
+    retry: 'Retry',
+    reply: 'Reply',
+    forward: 'Forward',
+    copy: 'Copy',
+    cancel: 'Cancel',
+    image: 'image',
+    link: 'link',
+    messageCopied: 'Message copied',
+    serverError: 'Server error'
+  }
+}
