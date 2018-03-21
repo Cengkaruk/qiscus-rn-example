@@ -107,7 +107,7 @@ class Login extends React.Component {
       ToastAndroid.show(I18n.t('invalidDisplayName'), ToastAndroid.SHORT)
     } else {
       qiscus.init({
-        AppId: 'sdksample',
+        AppId: 'sampleapp-65ghcsaysse',
         options: {
           loginSuccessCallback: (data) => this.successLogin(data), // if login / register is success
           loginErrorCallback: (data) => this.errorLogin(data) // if login / register is failed

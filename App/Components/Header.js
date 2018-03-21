@@ -78,12 +78,12 @@ export default class Header extends React.Component {
     if (loading) {
       title = (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size='small' color={Colors.black} />
+          <ActivityIndicator size='small' color={Colors.green} />
           <Text style={[styles.textTitle, { marginLeft: 5 }]}>{I18n.t('loading')}</Text>
         </View>
       )
     } else {
-      if (this.props.subtitle === I18n.t('online')) {
+      if (this.props.subtitle === I18n.t('online') || this.props.subtitle === I18n.t('typing')) {
         subtitle = (
           <Text style={styles.textOnline}>
             {this.props.subtitle}

@@ -3,15 +3,13 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Image as ImageReact,
+  Image,
   Linking
 } from 'react-native'
 
-import Image from 'react-native-image-progress'
-import Progress from 'react-native-progress/Circle'
-
 import PropTypes from 'prop-types'
 import I18n from 'react-native-i18n'
+import ImageLoad from 'react-native-image-placeholder';
 
 import styles from './Styles/ListChatStyles'
 import { Colors, Images, Dictionary } from '../Themes'
@@ -59,13 +57,13 @@ export default class ListChat extends React.PureComponent {
   renderSelfStatus () {
     const { isDelivered, isFailed, isPending, isRead, isSent } = this.props
     if (isRead) {
-      return <ImageReact source={Images.isRead} style={styles.statusRead} />
+      return <Image source={Images.isRead} style={styles.statusRead} />
     } else if (isDelivered) {
-      return <ImageReact source={Images.isDelivered} style={styles.statusDelivered} />
+      return <Image source={Images.isDelivered} style={styles.statusDelivered} />
     } else if (isPending) {
-      return <ImageReact source={Images.isPending} style={styles.statusPending} />
+      return <Image source={Images.isPending} style={styles.statusPending} />
     } else if (isFailed) {
-      return <ImageReact source={Images.isFailed} style={styles.statusFailed} />
+      return <Image source={Images.isFailed} style={styles.statusFailed} />
     }
   }
   
@@ -73,16 +71,23 @@ export default class ListChat extends React.PureComponent {
     let extImage = ['jpg','gif','jpeg','png', 'JPG', 'GIF', 'JPEG', 'PNG']
     let messageImage
     let isImage = extImage.find((data) => message.includes(data))
-    if (isImage) {
+    if (this.props.payload !== null && this.props.payload !== undefined && this.props.payload.url === undefined) {
+      return <Text style={styles.textMessage}>{this.props.payload.text}</Text>
+    } else if (isImage && message.includes('[file]')) {
       messageImage = message.substring(6, message.length-7).trim()
       return (
-        <Image
-          style={styles.imageMessage}
-          imageStyle={{ borderRadius: 6, resizeMode: 'cover' }}
-          source={{ uri: messageImage }}
-          indicator={Progress}
-          indicatorProps={{ color: Colors.green, size: 40 }}
-        />
+        <View style={{ flexDirection: 'column' }}>
+          <ImageLoad
+            style={styles.imageMessage}
+            source={{ uri: messageImage }}
+            isShowActivity={false}
+            resizeMode='cover'
+            borderRadius={6}
+            placeholderSource={Images.loading}
+            placeholderStyle={styles.imageMessage}
+          />
+          {this.renderCaption()}
+        </View>
       )
     } else if (message.includes('[file]')) {
       messageImage = message.substring(6, message.length-7).trim()
@@ -112,12 +117,16 @@ export default class ListChat extends React.PureComponent {
         </TouchableOpacity>
       )
     } else {
-      if (this.props.payload === null || this.props.payload === undefined) {
-        return <Text style={styles.textMessage}>{message}</Text>
-      } else {
-        return <Text style={styles.textMessage}>{this.props.payload.text}</Text>
-      }
+      return <Text style={styles.textMessage}>{message}</Text>
     }
+  }
+
+  renderCaption () {
+    const caption = this.props.payload.caption
+    if (caption === undefined || caption === '') {
+      return null
+    }
+    return <Text style={[styles.textMessage, {marginTop: 5, marginBottom: -2} ]}>{this.props.payload.caption}</Text>
   }
 
   renderMessageRetry () {
@@ -138,10 +147,24 @@ export default class ListChat extends React.PureComponent {
   renderPayload () {
     if (this.props.payload !== null && this.props.payload !== undefined) {
       if (this.props.payload.replied_comment_message === undefined) return null
-      let messageReplied
-      messageReplied = this.props.payload.replied_comment_message.replace(/\n/g, ' ')
-      if (messageReplied.length > 50) {
-        messageReplied = messageReplied.substr(0, 48) + '...'
+      let messageReplied, renderRepliedMessage
+      messageReplied = this.props.payload.replied_comment_message
+      let extImage = ['jpg','gif','jpeg','png', 'JPG', 'GIF', 'JPEG', 'PNG']
+      let isImage = extImage.find((data) => messageReplied.includes(data))
+      if (isImage && messageReplied.includes('[file]')) {
+        messageReplied = messageReplied.substring(6, messageReplied.length-7).trim()
+        renderRepliedMessage = (
+          <Image
+            style={styles.repliedImageMessage}
+            source={{ uri: messageReplied }}
+          />
+        )
+      } else {
+        messageReplied = this.props.payload.replied_comment_message.replace(/\n/g, ' ')
+        if (messageReplied.length > 50) {
+          messageReplied = messageReplied.substr(0, 48) + '...'
+        }
+        renderRepliedMessage = <Text style={styles.replied}>{messageReplied}</Text>
       }
       const backgroundColor = this.props.email === this.props.emailSender ? Colors.lightGrey : Colors.background
       return (
@@ -151,9 +174,7 @@ export default class ListChat extends React.PureComponent {
             <Text style={[styles.name, { marginLeft: 0 }]}>
               {this.props.payload.replied_comment_sender_username}
             </Text>
-            <Text style={styles.replied}>
-              {messageReplied}
-            </Text>
+            {renderRepliedMessage}
           </View>
         </View>
       )
@@ -173,9 +194,6 @@ export default class ListChat extends React.PureComponent {
           <Image
             source={{ uri: this.props.photo }}
             style={styles.photo}
-            imageStyle={{ borderRadius: 6, resizeMode: 'cover' }}
-            indicator={Progress}
-            indicatorProps={{ color: Colors.green, size: 10 }}
           />
         )
       } else {

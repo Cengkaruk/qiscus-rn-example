@@ -38,7 +38,7 @@ export default class App extends React.Component {
       avatar: null,
     }
     qiscus.init({
-      AppId: 'sdksample',
+      AppId: 'sampleapp-65ghcsaysse',
       options: {
         loginSuccessCallback: this.loadRoomList.bind(this),
         newMessagesCallback: (comments) => {

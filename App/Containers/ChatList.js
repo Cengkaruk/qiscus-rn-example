@@ -15,7 +15,7 @@ import {
   Clipboard
 } from 'react-native'
 import moment from 'moment'
-import { Actions } from 'react-native-router-flux'
+import { Actions, ActionConst } from 'react-native-router-flux'
 
 import { Images, Dictionary, Colors } from '../Themes'
 
@@ -41,7 +41,8 @@ class ChatList extends React.Component {
       lastMessageDate: '',
       message: '',
       photo: Images.profile,
-      messageOption: false,
+      messageOption: false, // state modal option message
+      attachment: false, // state modal attachment message
       lastCommentId: -1,
       firstCommentId: -1,
       loadmore: true,
@@ -52,26 +53,38 @@ class ChatList extends React.Component {
       emailUserReplied: '', // email of user replied
       messageReply: '', // message comment that appear before replied
       isReplying: false,
-      comments: this.props.comments
+      participants: [],
+      uriImageReplied: '', // uri replied message with image and caption
+      isTyping: false
     } 
   }
 
-  emitter = this.props.EventEmitter // receiving props emitter from ChatRoom.js (romm list)
+  emitter = this.props.emitter // receiving props emitter from ChatRoom.js (romm list)
 
   /**
    * array chat is reversed, and flatlist will show it in reversed too
    * this is to make the flatlist auto scroll to bottom 
-   * and if new (previeous) data added (older message), it wont move the index data in array
+   * and if new (previous) data added (older message), it wont move the index data in array
    * so the scroll view in flatlist wont move because new data added
    */
-
-  loadRoom () {
-    ToastAndroid.show('new message', ToastAndroid.SHORT)
-  }
 
   componentWillMount () {
     // add event emitter for handling new message
     this.emitter.addListener('new message', (params) => this.newMessage(params))
+    this.emitter.addListener('status', (params) => console.log(params))
+    this.emitter.addListener('typing', (params) => {
+      if (this.state.participants.find((data) => data.email === params.username)) {
+        if (params.message === '1') {
+          this.setState({
+            isTyping: true
+          })
+        } else if (params.message === '0') {
+          this.setState({
+            isTyping: false
+          })
+        }
+      }
+    })
 
     qiscus = this.props.qiscus
     qiscus.getRoomById(this.props.id).then(data => {
@@ -84,20 +97,26 @@ class ChatList extends React.Component {
           type: this.props.typeRoom,
           photo: data.avatar,
           lastCommentId: reversedData[reversedData.length - 1].id,
-          firstCommentId: reversedData[0].id
+          firstCommentId: reversedData[0].id,
+          participants: data.participants
         })
       } catch (e) {
         this.setState({
           data: [],
           loading: false,
           type: this.props.typeRoom,
-          photo: data.avatar
+          photo: data.avatar,
+          participants: data.participants
         })
       }
     }, err => {
       ToastAndroid.show(err, ToastAndroid.SHORT)
     })
   }
+
+  /**
+   * add handling for back android to trigger chatroom to relaod
+   */
 
   componentDidMount () {
     BackHandler.addEventListener('hardwareBackPress', () => this.backAndroid())
@@ -111,13 +130,17 @@ class ChatList extends React.Component {
     this.setState({
       isActive: false
     })
-    Actions.pop({ refresh: { callback: !this.state.callback } })
-    return true
+    Actions.chatroom({
+      type: ActionConst.POP_TO,
+      refresh: { callback: !this.state.callback } // trigger for componentWillReceiveProps in chatroom
+    })
+    return true // to prevent apps to exit
   }
 
   newMessage (data) {
+    // handling new message
     if (this.state.isActive) {
-      if (data.room_id_str === this.state.id) {
+      if (String(data.room_id_str) === String(this.state.id)) {
         const temp = {
         "attachment": null,
         "avatar": data.user_avatar,
@@ -166,8 +189,19 @@ class ChatList extends React.Component {
     )
   }
 
+  /**
+   * open the profile of our friend in chat
+   */
+
   profile () {
-    ToastAndroid.show('right pressed', ToastAndroid.SHORT)
+    const { type, participants, email } = this.state
+    let index = participants[0].email === email ? 1 : 0
+    Actions.profile({
+      type: ActionConst.PUSH,
+      typeProfile: 'other',
+      data: participants[index],
+      emitter: this.emitter
+    })
   }
 
   renderList () {
@@ -214,18 +248,7 @@ class ChatList extends React.Component {
         isPending={item.isPending}
         isRead={item.isRead}
         isSent={item.isSent}
-        onLongPress={() =>
-          {
-            const tempMessage = item.payload !== null ? item.payload.text : item.message
-            this.setState({
-              messageOption: true,
-              idReply: item.id,
-              emailUserReplied: item.username_real,
-              nameUserReplied: item.username_as,
-              messageReply: tempMessage
-            })
-          }
-        }
+        onLongPress={() => this.onMessagePressed(item)}
       />
     )
   }
@@ -233,6 +256,7 @@ class ChatList extends React.Component {
   renderInput () {
     const { message, isReplying } = this.state
     let showReplied = isReplying ? this.renderReply() : null
+    let sendIcon = message === '' ? Images.send : Images.sendActive
     return (
       <View style={{ flexDirection: 'column' }}>
         {showReplied}
@@ -240,7 +264,7 @@ class ChatList extends React.Component {
           <View style={styles.inputContainer}>
             <TouchableOpacity
               style={styles.buttonContainer}
-              onPress={() => {}}
+              onPress={() => this.setState({ attachment: true })}
             >
               <Image source={Images.attach} style={styles.imageButton} />
             </TouchableOpacity>
@@ -252,6 +276,9 @@ class ChatList extends React.Component {
                 value={message}
                 onChangeText={(text) => {
                   if (text.length > 0) { qiscus.publishTyping(1) }
+                  setTimeout(() => {
+                    qiscus.publishTyping(0)
+                  }, 5000)
                   this.setState({ message: text })}
                 }
                 autoCapitalize='none'
@@ -263,7 +290,7 @@ class ChatList extends React.Component {
               style={styles.buttonContainer}
               onPress={() => this.sendMessage()}
             >
-              <Image source={Images.send} style={styles.imageButton} />
+              <Image source={sendIcon} style={styles.imageButton} />
             </TouchableOpacity>
           </View>
         </View>
@@ -271,14 +298,57 @@ class ChatList extends React.Component {
     )
   }
 
+  /**
+   * render reply
+   * uriImageReplied is used to check if the message replied contain uri image and caption
+   * so if the message is [file] or the uriImageReplied is not ''
+   * then handling for reply message with image is triggered
+   * caption from replied image message is assigned to variable messageReply
+   */
+
   renderReply () {
-    const { nameUserReplied, messageReply } = this.state
-    let messagePreview
-    if (messageReply.length < 50) {
-      messagePreview = messageReply.replace(/\n/g, ' ')
+    const { nameUserReplied, messageReply, uriImageReplied } = this.state
+    let messagePreview, renderRepliedMessage, renderRepliedImage, messageImage
+    let extImage = ['jpg','gif','jpeg','png', 'JPG', 'GIF', 'JPEG', 'PNG']
+    let isImage = extImage.find((data) => messageReply.includes(data))
+    if ((isImage && messageReply.includes('[file]') || uriImageReplied !== '')) {
+      messageImage = messageReply.substring(6, messageReply.length-7).trim()
+      if (messageReply === undefined) {
+        renderRepliedMessage = null
+        renderRepliedImage = (
+          <Image
+            style={[styles.imageMessage,{ marginRight: 5}]}
+            source={{ uri: messageImage }}
+          />
+        )
+      } else if (messageReply !== '') {
+        messageImage = uriImageReplied.substring(6, uriImageReplied.length-7).trim()
+        renderRepliedMessage = <Text style={styles.textMessage}>{messageReply}</Text>
+        renderRepliedImage = (
+          <Image
+            style={[styles.imageMessage,{ marginRight: 5}]}
+            source={{ uri: messageImage }}
+          />
+        )
+      } else {
+        messageImage = uriImageReplied.substring(6, uriImageReplied.length-7).trim()
+        renderRepliedMessage = null
+        renderRepliedImage = (
+          <Image
+            style={[styles.imageMessage,{ marginRight: 5}]}
+            source={{ uri: messageImage }}
+          />
+        )
+      }
     } else {
-      messagePreview = messageReply.replace(/\n/g, ' ')
-      messagePreview = messagePreview.substr(0, 49) + '...'
+      if (messageReply.length < 50) {
+        messagePreview = messageReply.replace(/\n/g, ' ')
+      } else {
+        messagePreview = messageReply.replace(/\n/g, ' ')
+        messagePreview = messagePreview.substr(0, 49) + '...'
+      }
+      renderRepliedMessage = <Text style={styles.textMessage}>{messagePreview}</Text>
+      renderRepliedImage = null
     }
     return (
       <View style={styles.replyContainer}>
@@ -287,9 +357,10 @@ class ChatList extends React.Component {
         </View>
         <View style={styles.contentReplyContainer}>
           <Text style={styles.textName}>{nameUserReplied}</Text>
-          <Text style={styles.textMessage}>{messagePreview}</Text>
+          {renderRepliedMessage}
         </View>
         <View style={{ flex: 1 }} />
+        {renderRepliedImage}
         <View style={styles.cancelContainer}>
           <TouchableOpacity
             onPress={() => this.setState({ isReplying: false })}
@@ -328,6 +399,31 @@ class ChatList extends React.Component {
     )
   }
 
+  renderModalAttachment () {
+    const { attachment } = this.state
+    return (
+      <Modal
+        animationType={'fade'}
+        transparent
+        visible={attachment}
+        onRequestClose={() => this.setState({ attachment: false })}
+      >
+        <TouchableWithoutFeedback onPress={() => this.setState({ attachment: false })}>
+          <View style={styles.modalContainer}>
+            <View style={{ flex: 1 }} />
+            <View style={styles.optionContainer}>
+              {this.renderMenu(Images.camera, I18n.t('camera'))}
+              {this.renderMenu(Images.gallery, I18n.t('gallery'))}
+              {this.renderMenu(Images.file, I18n.t('file'))}
+              <View style={styles.border} />
+              {this.renderMenu(Images.cancel, I18n.t('cancel'))}
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    )
+  }
+
   renderMenu (images, label) {
     const newStyle = label === I18n.t('cancel') ? { color: Colors.red } : {}
     return (
@@ -345,14 +441,50 @@ class ChatList extends React.Component {
     switch (label) {
       case I18n.t('reply'):
         this.setState({ messageOption: false, isReplying: true })
-        break;
+        break
       case I18n.t('copy'):
         await Clipboard.setString(this.state.messageReply)
         this.setState({ messageOption: false })
         ToastAndroid.show(I18n.t('messageCopied'), ToastAndroid.SHORT)
+        break
+      case I18n.t('cancel'):
+        this.setState({ messageOption: false, attachment: false })
+        break
+      case I18n.t('camera'):
+        this.setState({ attachment: false })
+        this.openMedia('camera')
+        break
+      case I18n.t('gallery'):
+        this.setState({ attachment: false })
+        this.openMedia('gallery')
+        break
       default:
         break;
     }
+  }
+
+  async onMessagePressed (item) {
+    let tempMessage, uriImage
+    if (item.payload === null) {
+      tempMessage = await item.message
+      uriImage = ''
+    } else if (item.payload !== null) {
+      if (item.payload.text !== undefined) {
+        tempMessage = await item.payload.text
+        uriImage = ''
+      } else if (item.payload.caption !== undefined) {
+        tempMessage = await item.payload.caption
+        uriImage = await item.message
+      }
+    }
+    this.setState({
+      messageOption: true,
+      idReply: item.id,
+      emailUserReplied: item.username_real,
+      nameUserReplied: item.username_as,
+      messageReply: tempMessage,
+      uriImageReplied: uriImage
+    })
   }
 
   loadmore () {
@@ -410,8 +542,22 @@ class ChatList extends React.Component {
     }
   }
 
+  openMedia (type) {
+    Actions.media({
+      type: ActionConst.PUSH,
+      typeAttach: type,
+      idReply: this.state.idReply,
+      nameUserReplied: this.state.nameUserReplied,
+      emailUserReplied: this.state.emailUserReplied,
+      messageReply: this.state.messageReply,
+      isReplying: this.state.isReplying,
+      qiscus: this.props.qiscus,
+      id: this.state.id
+    })
+  }
+
   render () {
-    const { data, loading, photo } = this.state
+    const { data, loading, photo, isTyping } = this.state
     let view, renderDate, renderInput
     if (loading) {
       view = (
@@ -428,6 +574,7 @@ class ChatList extends React.Component {
           title={this.state.name}
           onLeftPress={() => this.backAndroid()}
           showRightButton
+          subtitle={isTyping ? I18n.t('typing') : ''}
           isLoading={loading}
           rightButtonImage={photo}
           onRightPress={() => this.profile()}
@@ -436,6 +583,7 @@ class ChatList extends React.Component {
         {view}
         {renderInput}
         {this.renderModalOptionMessage()}
+        {this.renderModalAttachment()}
       </View>
     )
   }

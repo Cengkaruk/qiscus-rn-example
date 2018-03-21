@@ -130,5 +130,11 @@ export default StyleSheet.create({
     width: 16,
     height: 16,
     resizeMode: 'contain'
+  },
+  imageMessage: {
+    width: 33,
+    height: 33,
+    resizeMode: 'cover',
+    borderRadius: 4
   }
 })

@@ -19,8 +19,8 @@ export default StyleSheet.create({
     justifyContent: 'center'
   },
   imageLeft: {
-    width: 30,
-    height: 30,
+    width: 24,
+    height: 24,
     resizeMode: 'contain'
   },
   titleContainer: {

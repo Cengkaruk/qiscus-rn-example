@@ -41,7 +41,8 @@ export default StyleSheet.create({
     width: 30,
     borderRadius: 15,
     marginRight: 10,
-    marginTop: 20
+    marginTop: 20,
+    resizeMode: 'cover'
   },
   statusRead: {
     height: 12,
@@ -76,9 +77,10 @@ export default StyleSheet.create({
     color: Colors.red
   },
   imageMessage: {
-    minHeight: 0.20 * Dimensions.get('window').height,
-    minWidth: 0.45 * Dimensions.get('window').width,
-    margin: -4
+    width: 200,
+    height: 112,
+    margin: -3,
+    borderRadius: 6
   },
   payloadContainer: {
     flexDirection: 'row',
@@ -106,5 +108,11 @@ export default StyleSheet.create({
     fontFamily: 'regular',
     fontSize: 11,
     lineHeight: 19
+  },
+  repliedImageMessage: {
+    minHeight: 45,
+    minWidth: 45,
+    borderRadius: 6,
+    resizeMode: 'contain'
   }
 })

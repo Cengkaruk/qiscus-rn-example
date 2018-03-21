@@ -13,6 +13,7 @@ const images = {
   emptyChat: require('../Images/empty-chat.png'),
   attach: require('../Images/attach.png'),
   send: require('../Images/send.png'),
+  sendActive: require('../Images/sendActive.png'),
   isRead: require('../Images/isRead.png'),
   isDelivered: require('../Images/isDelivered.png'),
   isPending: require('../Images/isPending.png'),
@@ -21,7 +22,17 @@ const images = {
   forward: require('../Images/forward.png'),
   copy: require('../Images/copy.png'),
   cancel: require('../Images/cancel.png'),
-  cancelGrey: require('../Images/cancelGrey.png')
+  cancelGrey: require('../Images/cancelGrey.png'),
+  loading: require('../Images/loading.png'),
+  camera: require('../Images/camera.png'),
+  gallery: require('../Images/gallery.png'),
+  file: require('../Images/file.png'),
+  changeImage: require('../Images/changeImage.png'),
+  contact: require('../Images/contact.png'),
+  edit: require('../Images/edit.png'),
+  id: require('../Images/id.png'),
+  logout: require('../Images/logout.png'),
+  group: require('../Images/group.png')
 }
 
 export default images
