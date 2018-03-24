@@ -16,10 +16,10 @@ export default StyleSheet.create({
   item: {
     flexDirection: 'row',
     flex: 1,
+    marginLeft: 15,
     alignItems: 'center',
     paddingTop: 10,
     paddingBottom: 10,
-    marginLeft: 15,
     borderBottomColor: Colors.border,
     borderBottomWidth: 1
   },
@@ -28,5 +28,10 @@ export default StyleSheet.create({
     fontSize: 14,
     lineHeight: 19,
     color: Colors.black
+  },
+  icon: {
+    height: 24,
+    width: 24,
+    resizeMode: 'contain'
   }
 })

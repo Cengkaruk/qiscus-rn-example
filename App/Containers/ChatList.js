@@ -12,7 +12,9 @@ import {
   Modal,
   TouchableWithoutFeedback,
   BackHandler,
-  Clipboard
+  Clipboard,
+  Platform,
+  KeyboardAvoidingView
 } from 'react-native'
 import moment from 'moment'
 import { Actions, ActionConst } from 'react-native-router-flux'
@@ -46,7 +48,6 @@ class ChatList extends React.Component {
       lastCommentId: -1,
       firstCommentId: -1,
       loadmore: true,
-      callback: this.props.callback,
       isActive: true,
       idReply: -1, // id comment that will be replied
       nameUserReplied: '', // name of user replied
@@ -55,11 +56,18 @@ class ChatList extends React.Component {
       isReplying: false,
       participants: [],
       uriImageReplied: '', // uri replied message with image and caption
-      isTyping: false
+      isTyping: false,
+      isOnline: false,
+      sendingMessage: false,
+      dataGroup: {
+        name: '',
+        photo: ''
+      }
     } 
   }
 
   emitter = this.props.emitter // receiving props emitter from ChatRoom.js (romm list)
+  qiscus = this.props.qiscus
 
   /**
    * array chat is reversed, and flatlist will show it in reversed too
@@ -71,25 +79,26 @@ class ChatList extends React.Component {
   componentWillMount () {
     // add event emitter for handling new message
     this.emitter.addListener('new message', (params) => this.newMessage(params))
-    this.emitter.addListener('status', (params) => console.log(params))
-    this.emitter.addListener('typing', (params) => {
-      if (this.state.participants.find((data) => data.email === params.username)) {
-        if (params.message === '1') {
-          this.setState({
-            isTyping: true
-          })
-        } else if (params.message === '0') {
-          this.setState({
-            isTyping: false
-          })
-        }
-      }
-    })
+    this.emitter.addListener('status', (params) => this.handleStatus(params))
+    this.emitter.addListener('typing', (params) => this.handleTyping(params))
+    // this.emitter.addListener('delivered', (params) => console.log('delivered', params))
+    this.emitter.addListener('read', (params) => this.handleReadMessage(params))
+    this.loadRoom()
+  }
 
-    qiscus = this.props.qiscus
+  loadRoom () {
     qiscus.getRoomById(this.props.id).then(data => {
       try {
         const reversedData = data.comments.length > 0 ? [...data.comments].reverse() : []
+        if (this.props.typeRoom === 'group') {
+          let tempDataGroup = {
+            name: this.props.roomName,
+            photo: data.avatar
+          }
+          this.setState({
+            dataGroup: tempDataGroup
+          })
+        }
         this.setState({
           data: reversedData,
           loading: false,
@@ -120,9 +129,11 @@ class ChatList extends React.Component {
 
   componentDidMount () {
     BackHandler.addEventListener('hardwareBackPress', () => this.backAndroid())
+    this.isMounted = true
   }
 
   componentWillUnmount () {
+    this.isMounted = false
     BackHandler.removeEventListener('hardwareBackPress', () => this.backAndroid())
   }
 
@@ -131,8 +142,7 @@ class ChatList extends React.Component {
       isActive: false
     })
     Actions.chatroom({
-      type: ActionConst.POP_TO,
-      refresh: { callback: !this.state.callback } // trigger for componentWillReceiveProps in chatroom
+      type: ActionConst.POP_TO
     })
     return true // to prevent apps to exit
   }
@@ -174,6 +184,50 @@ class ChatList extends React.Component {
     }
   }
 
+  handleReadMessage (params) {
+    if (this.state.isActive) {
+      if (params.message !== undefined) {
+        let tempData = [...this.state.data]
+        for (let i = 0; i < tempData.length; i++) {
+          tempData[i].isRead = true
+        }
+        this.setState({
+          data: tempData
+        })
+      }
+    }
+  }
+
+  handleTyping (params) {
+    if (this.state.isActive) {
+      if (this.state.participants.find((data) => data.email === params.username)) {
+        if (params.message === '1') {
+          this.setState({
+            isTyping: true
+          })
+        } else if (params.message === '0') {
+          this.setState({
+            isTyping: false
+          })
+        }
+      }
+    }
+  }
+
+  handleStatus (params) {
+    if (this.state.isActive) {
+      if (String(params).includes('1:')) {
+        this.setState({
+          isOnline: true
+        })
+      } else {
+        this.setState({
+          isOnline: false
+        })
+      }
+    }
+  }
+
   /**
    * to view date when last message received
    */
@@ -194,14 +248,32 @@ class ChatList extends React.Component {
    */
 
   profile () {
-    const { type, participants, email } = this.state
+    const { type, participants, email, dataGroup } = this.state
     let index = participants[0].email === email ? 1 : 0
-    Actions.profile({
-      type: ActionConst.PUSH,
-      typeProfile: 'other',
-      data: participants[index],
-      emitter: this.emitter
-    })
+    switch (type) {
+      case 'single':
+        Actions.profile({
+          type: ActionConst.PUSH,
+          typeProfile: 'other',
+          data: participants[index],
+          emitter: this.emitter,
+          qiscus: this.qiscus,
+          id: this.state.id
+        })
+        break
+      case 'group':
+        Actions.profilegroup({
+          type: ActionConst.PUSH,
+          data: participants,
+          emitter: this.emitter,
+          qiscus: this.qiscus,
+          dataGroup: dataGroup,
+          id: this.state.id
+        })
+        break
+      default:
+        break
+    }
   }
 
   renderList () {
@@ -515,30 +587,39 @@ class ChatList extends React.Component {
   }
 
   sendMessage () {
-    const { id, message, firstCommentId, isReplying, nameUserReplied, emailUserReplied, messageReply, idReply } = this.state
-    if (message.length > 0) {
-      if (isReplying) {
-        const payload = {
-          text: message,
-          replied_comment_id: idReply,
-          replied_comment_message: messageReply,
-          replied_comment_payload: null,
-          replied_comment_sender_email: emailUserReplied,
-          replied_comment_sender_username: nameUserReplied,
-          replied_comment_type: 'text'
-        }
-        qiscus.sendComment(id, message, null, 'reply', JSON.stringify(payload))
+    const { id, message, firstCommentId, isReplying, nameUserReplied, emailUserReplied, messageReply, idReply, sendingMessage } = this.state
+    if (!sendingMessage) {
+      if (message.length > 0) {
+        this.setState({
+          sendingMessage: true
+        })
+        if (isReplying) {
+          const payload = {
+            text: message,
+            replied_comment_id: idReply,
+            replied_comment_message: messageReply,
+            replied_comment_payload: null,
+            replied_comment_sender_email: emailUserReplied,
+            replied_comment_sender_username: nameUserReplied,
+            replied_comment_type: 'text'
+          }
+          qiscus.sendComment(id, message, null, 'reply', JSON.stringify(payload))
+            .then(() => {
+              this.setState({ message: '', isReplying: false, sendingMessage: false })
+              qiscus.publishTyping(0)
+            })
+            .catch((e) => ToastAndroid.show(e, ToastAndroid.SHORT))
+        } else {
+          qiscus.sendComment(id, message)
           .then(() => {
-            this.setState({ message: '', isReplying: false })
+            this.setState({ message: '', isReplying: false, sendingMessage: false })
             qiscus.publishTyping(0)
           })
-      } else {
-        qiscus.sendComment(id, message)
-        .then(() => {
-          this.setState({ message: '', isReplying: false })
-          qiscus.publishTyping(0)
-        })
+          .catch((e) => ToastAndroid.show(e, ToastAndroid.SHORT))
+        }
       }
+    } else {
+      ToastAndroid.show(I18n.t('waitingSentMessage'), ToastAndroid.SHORT)
     }
   }
 
@@ -556,9 +637,21 @@ class ChatList extends React.Component {
     })
   }
 
+  renderContent (content) {
+    if (Platform.OS === 'ios') {
+      return (
+        <KeyboardAvoidingView behavior='padding'>
+          {content}
+        </KeyboardAvoidingView>
+      )
+    } else {
+      return content
+    }
+  }
+
   render () {
-    const { data, loading, photo, isTyping } = this.state
-    let view, renderDate, renderInput
+    const { data, loading, photo, isTyping, isOnline } = this.state
+    let view, renderDate, renderInput, subtitle
     if (loading) {
       view = (
         <View />
@@ -568,20 +661,27 @@ class ChatList extends React.Component {
       renderDate = data.length > 0 ? this.renderDate() : null
       renderInput = this.renderInput()
     }
+    if (isTyping) {
+      subtitle = I18n.t('typing')
+    } else if (isOnline) {
+      subtitle = I18n.t('online')
+    } else {
+      subtitle = ''
+    }
     return (
       <View style={styles.container}>
         <Header
           title={this.state.name}
           onLeftPress={() => this.backAndroid()}
           showRightButton
-          subtitle={isTyping ? I18n.t('typing') : ''}
+          subtitle={subtitle}
           isLoading={loading}
           rightButtonImage={photo}
           onRightPress={() => this.profile()}
         />
         {renderDate}
         {view}
-        {renderInput}
+        {this.renderContent(renderInput)}
         {this.renderModalOptionMessage()}
         {this.renderModalAttachment()}
       </View>

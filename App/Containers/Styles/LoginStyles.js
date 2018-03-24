@@ -8,6 +8,8 @@ export default StyleSheet.create({
   },
   imageBackground: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: Colors.background
   },
   logoContainer: {

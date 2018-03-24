@@ -39,6 +39,9 @@ export default {
     newConversations: 'New Conversation',
     createGroupChat: 'Create Group Chat',
     contacts: 'CONTACTS',
-    typing: 'Typing...'
+    typing: 'Typing...',
+    waitingSentMessage: 'Waiting for previous message sent',
+    roomInfo: 'Room Info',
+    participants: 'PARTICIPANTS'
   }
 }

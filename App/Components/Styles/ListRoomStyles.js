@@ -13,8 +13,7 @@ export default StyleSheet.create({
     width: 40,
     borderRadius: 160,
     marginBottom: 15,
-    marginRight: 15,
-    resizeMode: 'cover'
+    marginRight: 15
   },
   item: {
     flexDirection: 'row',

@@ -1,8 +1,9 @@
 import React from 'react'
-import { TouchableOpacity, View, Text, Image, ActivityIndicator } from 'react-native'
+import { TouchableOpacity, View, Text, Image, ActivityIndicator, Platform } from 'react-native'
 import I18n from 'react-native-i18n'
 import { Actions, ActionConst } from 'react-native-router-flux'
 import { Colors, Images, Dictionary } from '../Themes'
+import ImageLoad from 'react-native-image-placeholder'
 import PropTypes from 'prop-types'
 
 import styles from './Styles/HeaderStyles'
@@ -55,18 +56,28 @@ export default class Header extends React.Component {
     let image, roundImage
     if (this.props.leftButtonImage === undefined) {
       image = Images.back
+      roundImage = { borderRadius: 0, resizeMode: 'contain' }
     } else {
       if (String(this.props.leftButtonImage).includes('http')) {
         image = { uri: this.props.leftButtonImage }
-        roundImage = { borderRadius: 160, resizeMode: 'cover' }
+        roundImage = { borderRadius: Platform.OS === 'ios' ? 12 : 160, resizeMode: 'cover' }
       } else {
         image = this.state.leftButtonImage
+        roundImage = { borderRadius: 0, resizeMode: 'contain' }
       }
     }
     return (
       <View style={styles.leftContainer}>
         <TouchableOpacity onPress={() => this.props.onLeftPress()}>
-          <Image source={image} style={[styles.imageLeft, roundImage]} />
+          <ImageLoad
+            style={styles.imageLeft}
+            source={image}
+            isShowActivity={false}
+            resizeMode='contain'
+            borderRadius={roundImage.borderRadius}
+            placeholderSource={null}
+            placeholderStyle={styles.imageLeft}
+          />
         </TouchableOpacity>
       </View>
     )
@@ -118,18 +129,28 @@ export default class Header extends React.Component {
     let roundImage
     if (this.props.rightButtonImage === undefined) {
       image = Images.nextArrow
+      roundImage = { borderRadius: 0, resizeMode: 'contain' }
     } else {
       if (String(this.props.rightButtonImage).includes('http')) {
         image = { uri: this.props.rightButtonImage }
-        roundImage = { borderRadius: 160, resizeMode: 'cover' }
+        roundImage = { borderRadius: Platform.OS === 'ios' ? 12 : 160, resizeMode: 'cover' }
       } else {
         image = this.state.rightButtonImage
+        roundImage = { borderRadius: 0, resizeMode: 'contain' }
       }
     }
     if (this.props.showRightButton) {
       content = (
         <TouchableOpacity onPress={() => this.props.onRightPress()}>
-          <Image source={image} style={[styles.imageLeft, roundImage]} />
+          <ImageLoad
+            style={[styles.imageLeft]}
+            source={image}
+            isShowActivity={false}
+            resizeMode={roundImage.resizeMode}
+            borderRadius={roundImage.borderRadius}
+            placeholderSource={null}
+            placeholderStyle={styles.imageLeft}
+          />
         </TouchableOpacity>
       )
     } else {

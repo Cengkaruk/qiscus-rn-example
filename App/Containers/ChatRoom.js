@@ -38,7 +38,6 @@ class ChatRoom extends React.Component {
       data: [],
       email: this.props.email, // receiving params from previous container
       photo: this.props.photo,
-      callback: false,
       isComponentActive: true,
     }
   }
@@ -54,6 +53,7 @@ class ChatRoom extends React.Component {
       options: {
         newMessagesCallback: (comments) => {
           this.loadRoom()
+          console.log('new message')
           emitter.emit('new message', comments[0]) // emitter name is new message
         },
         chatRoomCreatedCallback: (data) => {
@@ -63,6 +63,12 @@ class ChatRoom extends React.Component {
         },
         presenceCallback: (data) => {
           emitter.emit('status', data)
+        },
+        commentDeliveredCallback: (data) => {
+          // emitter.emit('delivered', data)
+        },
+        commentReadCallback: (data) => {
+          emitter.emit('read', data)
         }
       }
     })
@@ -74,19 +80,6 @@ class ChatRoom extends React.Component {
         data: data,
         loading: false
       }))
-  }
-
-  componentWillReceiveProps (nextProps) {
-    if (nextProps.callback !== undefined) {
-      if (nextProps.callback !== this.state.callback) {
-        // reload the roomlist to check new message after back from detail chat (chatlist)
-        this.loadRoom()
-        this.setState({
-          callback: nextProps.callback,
-          isComponentActive: true
-        })
-      }
-    }
   }
 
   profile () {
@@ -154,7 +147,6 @@ class ChatRoom extends React.Component {
       typeRoom: typeRoom,
       qiscus: qiscus,
       comments: this.state.comments,
-      callback: this.state.callback,
       emitter: emitter // proping emitter for chat list component
     })
   }
@@ -167,7 +159,13 @@ class ChatRoom extends React.Component {
         <View />
       )
     } else {
-      view = data.length > 1 ? this.renderList() : <EmptyState type='room' showButton />
+      view = data.length > 1 ? this.renderList() :
+        <EmptyState
+          type='room'
+          showButton
+          qiscus={qiscus}
+          emitter={emitter}
+        />
     }
     return (
       <View style={styles.container}>

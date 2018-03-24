@@ -8,10 +8,11 @@ import {
 
 import PropTypes from 'prop-types'
 
+import ImageLoad from 'react-native-image-placeholder'
 import styles from './Styles/ListRoomStyles'
 import I18n from 'react-native-i18n'
 
-import { Dictionary } from '../Themes'
+import { Dictionary, Images } from '../Themes'
 
 I18n.translations = Dictionary
 
@@ -68,7 +69,15 @@ export default class ListRoom extends React.PureComponent {
         activeOpacity={0.8}
         onPress={() => this.props.onPress()}
       >
-        <Image source={{ uri: this.props.avatar }} style={styles.photo} />
+        <ImageLoad
+            style={styles.photo}
+            source={{ uri: this.props.avatar }}
+            isShowActivity={false}
+            resizeMode='cover'
+            borderRadius={20}
+            placeholderSource={Images.loading}
+            placeholderStyle={styles.photo}
+        />
         <View style={styles.item}>
           <View style={{ flexDirection: 'column', flex: 1, marginRight: 15 }}>
             <Text style={styles.textName}>{this.props.name}</Text>

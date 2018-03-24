@@ -24,13 +24,22 @@ class Profile extends React.Component {
   constructor (props) {
     super(props)
     this.state = {
-      typeProfile: this.props.typeProfile, // self, other, groups
+      typeProfile: this.props.typeProfile, // self, other
       data: this.props.data // data profile
     }
   }
 
   qiscus = this.props.qiscus
   emitter = this.props.emitter
+
+  getRoomInfo () {
+    // used to refresh profile after edit it
+    qiscus.getRoomsInfo({room_ids: [this.props.id]}).then(res => {
+      console.log('room info ', res.results.rooms_info.participants)
+    }, err => {
+      console.log(err)
+    })
+  }
 
   renderPhoto () {
     const { data, typeProfile } = this.state
@@ -51,7 +60,12 @@ class Profile extends React.Component {
   }
 
   renderInformation () {
-    const { data } = this.state
+    const { data, typeProfile } = this.state
+    let editName = typeProfile === 'self' ? (
+      <TouchableOpacity onPress={() => {}}>
+        <Image source={Images.edit} style={styles.icon} />
+      </TouchableOpacity>
+    ) : null
     return (
       <View style={styles.infoContainer}>
         <Text style={styles.textLabel}>{I18n.t('information')}</Text>
@@ -59,9 +73,7 @@ class Profile extends React.Component {
           <View style={styles.nameContainer}>
             <Image source={Images.contact} style={styles.icon} />
             <Text style={styles.textData}>{data.username}</Text>
-            <TouchableOpacity onPress={() => {}}>
-              <Image source={Images.edit} style={styles.icon} />
-            </TouchableOpacity>
+            {editName}
           </View>
           <View style={{ height: 20 }} />
           <View style={styles.nameContainer}>
@@ -132,9 +144,10 @@ class Profile extends React.Component {
   }
 
   render () {
+    const { typeProfile } = this.state
     return (
       <View style={styles.container}>
-        <Header title={I18n.t('profile')} />
+        <Header title={typeProfile === 'self' ? I18n.t('profile') : this.props.data.username} />
         {this.renderPhoto()}
         {this.renderInformation()}
         {this.renderLogoutButton()}

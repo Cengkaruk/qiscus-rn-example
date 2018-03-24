@@ -9,7 +9,7 @@ import {
 
 import PropTypes from 'prop-types'
 import I18n from 'react-native-i18n'
-import ImageLoad from 'react-native-image-placeholder';
+import ImageLoad from 'react-native-image-placeholder'
 
 import styles from './Styles/ListChatStyles'
 import { Colors, Images, Dictionary } from '../Themes'

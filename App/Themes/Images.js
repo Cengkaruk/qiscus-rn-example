@@ -30,9 +30,11 @@ const images = {
   changeImage: require('../Images/changeImage.png'),
   contact: require('../Images/contact.png'),
   edit: require('../Images/edit.png'),
+  editWhite: require('../Images/edit-white.png'),
   id: require('../Images/id.png'),
   logout: require('../Images/logout.png'),
-  group: require('../Images/group.png')
+  group: require('../Images/group.png'),
+  delete: require('../Images/delete.png')
 }
 
 export default images

@@ -5,7 +5,9 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
-  ToastAndroid
+  ToastAndroid,
+  Platform,
+  KeyboardAvoidingView
 } from 'react-native'
 
 import axios from 'axios'
@@ -40,16 +42,21 @@ class Media extends React.Component {
   async componentDidMount () {
     const type = await this.props.typeAttach
     if (type === 'camera') {
-      this.openCamera()
+      setTimeout(() => {
+        this.openCamera()
+      }, 500)
     } else {
-      this.openGallery()
+      setTimeout(() => {
+        this.openGallery()
+      }, 600)
     }
   }
 
-  async openCamera () {
+  openCamera = async () => {
     let result = await ImagePicker.launchCameraAsync({
       quality: 0.5,
-      aspect: [4, 3]
+      aspect: [4, 3],
+      allowsEditing: true
     })
     this.setState({
       imageUri: result.uri,
@@ -60,11 +67,12 @@ class Media extends React.Component {
     }
   }
 
-  async openGallery () {
+  openGallery = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       quality: 0.5,
       mediaTypes: 'Images',
-      aspect: [4, 3]
+      aspect: [4, 3],
+      allowsEditing: true
     })
     this.setState({
       imageUri: result.uri,
@@ -166,6 +174,18 @@ class Media extends React.Component {
       .catch((e) => console.log(e))
   }
 
+  renderContent (content) {
+    if (Platform.OS === 'ios') {
+      return (
+        <KeyboardAvoidingView behavior='padding'>
+          {content}
+        </KeyboardAvoidingView>
+      )
+    } else {
+      return content
+    }
+  }
+
   render () {
     return (
       <View style={styles.container}>
@@ -175,7 +195,7 @@ class Media extends React.Component {
           isLoading={this.state.loading}
         />
         {this.renderImage()}
-        {this.renderInput()}
+        {this.renderContent(this.renderInput())}
       </View>
     )
   }

@@ -5,5 +5,6 @@ import EmptyState from './EmptyState'
 import ListRoom from './ListRoom'
 import ListChat from './ListChat'
 import ListContact from './ListContact'
+import ListMember from './ListMember'
 
-export { Button, TextInputLogin, Header, EmptyState, ListRoom, ListChat, ListContact }
+export { Button, TextInputLogin, Header, EmptyState, ListRoom, ListChat, ListContact, ListMember }

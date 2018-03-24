@@ -29,7 +29,7 @@
     "react-native-image-placeholder": "^1.0.14",
     "react-native-lightbox": "^0.7.0",
     "react-native-qiscus-sdk": "git://github.com/qiscus/react-native-qiscus-sdk-js.git",
-    "react-native-router-flux": "^4.0.0-beta.28",
+    "react-native-router-flux": "4.0.0-beta.28",
     "react-native-vector-icons": "^4.5.0"
   }
 }

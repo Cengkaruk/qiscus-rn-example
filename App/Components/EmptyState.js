@@ -1,7 +1,8 @@
 import React from 'react'
-import { View, Image, ToastAndroid, Text } from 'react-native'
+import { View, Image, Text } from 'react-native'
 import { Colors, Images, Dictionary } from '../Themes'
 import PropTypes from 'prop-types'
+import { Actions, ActionConst } from 'react-native-router-flux'
 
 import styles from './Styles/EmptyStateStyles'
 import I18n from 'react-native-i18n'
@@ -29,7 +30,11 @@ export default class EmptyState extends React.Component {
   }
 
   openContact () {
-    ToastAndroid.show('open contact', ToastAndroid.SHORT)
+    Actions.contact({
+      type: ActionConst.PUSH,
+      qiscus: this.props.qiscus,
+      emitter: this.props.emitter
+    })
   }
 
   renderButton () {

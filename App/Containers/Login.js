@@ -6,7 +6,9 @@ import {
   ImageBackground,
   ScrollView,
   ToastAndroid,
-  AsyncStorage
+  AsyncStorage,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native'
 
 import { Actions, ActionConst } from 'react-native-router-flux'
@@ -139,7 +141,33 @@ class Login extends React.Component {
     }
   }
 
+  renderContent (content) {
+    if (Platform.OS === 'ios') {
+      return (
+        <KeyboardAvoidingView behavior='position'>
+          {content}
+        </KeyboardAvoidingView>
+      )
+    } else {
+      return (
+        <ScrollView
+          keyboardShouldPersistTaps='handled'
+          showsVerticalScrollIndicator={false}
+        >
+          {content}
+        </ScrollView>
+      )
+    }
+  }
+
   render () {
+    let content = (
+      <View>
+        {this.renderLogo()}
+        {this.renderInputEmailAndDisplayName()}
+        {this.renderButtonLogin()}
+      </View>
+    )
     return (
       <View style={styles.container}>
         <ImageBackground
@@ -148,14 +176,7 @@ class Login extends React.Component {
           resizeMode='stretch'
         >
           <View style={styles.scrollViewContainer}>
-            <ScrollView
-              keyboardShouldPersistTaps='handled'
-              showsVerticalScrollIndicator={false}
-            >
-              {this.renderLogo()}
-              {this.renderInputEmailAndDisplayName()}
-              {this.renderButtonLogin()}
-            </ScrollView>
+            {this.renderContent(content)}
           </View>
         </ImageBackground>
       </View>

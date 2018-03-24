@@ -1,12 +1,12 @@
-import { StyleSheet } from 'react-native'
+import { StyleSheet, Platform } from 'react-native'
 import { Colors } from '../../Themes'
 
 export default StyleSheet.create({
   container: {
-    height: 56,
+    height: Platform.OS === 'ios' ? 64 : 54,
     padding: 10,
     paddingBottom: 0,
-    paddingTop: 0,
+    paddingTop: Platform.OS === 'ios' ? 20 : 0,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.background,
@@ -20,8 +20,7 @@ export default StyleSheet.create({
   },
   imageLeft: {
     width: 24,
-    height: 24,
-    resizeMode: 'contain'
+    height: 24
   },
   titleContainer: {
     flex: 8,

@@ -15,6 +15,7 @@ import ChatList from '../Containers/ChatList'
 import ChatRoom from '../Containers/ChatRoom'
 import Media from '../Containers/Media'
 import Profile from '../Containers/Profile'
+import ProfileGroup from '../Containers/ProfileGroup'
 import Contact from '../Containers/Contact'
 import App from '../Containers/App'
 
@@ -61,6 +62,12 @@ const Navigation = () => (
         title=''
         hideNavBar
         component={Profile}
+      />
+      <Scene
+        key='profilegroup'
+        title=''
+        hideNavBar
+        component={ProfileGroup}
       />
       <Scene
         key='contact'
