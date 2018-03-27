@@ -143,7 +143,7 @@ export default class Header extends React.Component {
       content = (
         <TouchableOpacity onPress={() => this.props.onRightPress()}>
           <ImageLoad
-            style={[styles.imageLeft]}
+            style={styles.imageLeft}
             source={image}
             isShowActivity={false}
             resizeMode={roundImage.resizeMode}

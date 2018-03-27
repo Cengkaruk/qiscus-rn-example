@@ -24,8 +24,8 @@ export default StyleSheet.create({
     backgroundColor: Colors.green
   },
   nextArrow: {
-    height: 18,
-    width: 18,
+    height: 20,
+    width: 20,
     resizeMode: 'contain',
     tintColor: Colors.background
   },

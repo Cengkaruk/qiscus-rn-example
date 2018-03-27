@@ -17,6 +17,7 @@ import Media from '../Containers/Media'
 import Profile from '../Containers/Profile'
 import ProfileGroup from '../Containers/ProfileGroup'
 import Contact from '../Containers/Contact'
+import CreateGroup from '../Containers/CreateGroup'
 import App from '../Containers/App'
 
 /**
@@ -74,6 +75,12 @@ const Navigation = () => (
         title=''
         hideNavBar
         component={Contact}
+      />
+      <Scene
+        key='creategroup'
+        title=''
+        hideNavBar
+        component={CreateGroup}
       />
       <Scene
         key='app'

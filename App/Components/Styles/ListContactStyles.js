@@ -28,5 +28,10 @@ export default StyleSheet.create({
     fontSize: 14,
     lineHeight: 19,
     color: Colors.black
+  },
+  iconCheck: {
+    height: 20,
+    width: 20,
+    resizeMode: 'contain'
   }
 })

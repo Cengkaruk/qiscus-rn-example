@@ -68,7 +68,7 @@ export default class ListChat extends React.PureComponent {
   }
   
   renderMessage (message) {
-    let extImage = ['jpg','gif','jpeg','png', 'JPG', 'GIF', 'JPEG', 'PNG']
+    let extImage = ['.jpg','.gif','.jpeg','.png', '.JPG', '.GIF', '.JPEG', '.PNG']
     let messageImage
     let isImage = extImage.find((data) => message.includes(data))
     if (this.props.payload !== null && this.props.payload !== undefined && this.props.payload.url === undefined) {

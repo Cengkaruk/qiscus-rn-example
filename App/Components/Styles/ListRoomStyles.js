@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native'
+import { StyleSheet, Platform } from 'react-native'
 import { Colors } from '../../Themes'
 
 export default StyleSheet.create({
@@ -11,16 +11,16 @@ export default StyleSheet.create({
   photo: {
     height: 40,
     width: 40,
-    borderRadius: 160,
     marginBottom: 15,
-    marginRight: 15
+    borderRadius: Platform.OS === 'ios' ? 20 : 160
   },
   item: {
     flexDirection: 'row',
     flex: 1,
     paddingBottom: 15,
     borderBottomColor: Colors.border,
-    borderBottomWidth: 1
+    borderBottomWidth: 1,
+    marginLeft: 15
   },
   textName: {
     fontFamily: 'regular',

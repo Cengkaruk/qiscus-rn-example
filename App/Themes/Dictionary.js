@@ -42,6 +42,13 @@ export default {
     typing: 'Typing...',
     waitingSentMessage: 'Waiting for previous message sent',
     roomInfo: 'Room Info',
-    participants: 'PARTICIPANTS'
+    participants: 'PARTICIPANTS',
+    chooseContacts: 'Choose Contacts',
+    search: 'Search',
+    groupInfo: 'Group Info',
+    groupName: 'Group Name',
+    deleteMember: 'Do you want delete "{{name}}"\nfrom group "{{roomName}}"?',
+    yes: 'YES',
+    no: 'NO'
   }
 }

@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native'
+import { StyleSheet, Platform, Dimensions } from 'react-native'
 import { Colors } from '../../Themes'
 
 export default StyleSheet.create({
@@ -18,6 +18,12 @@ export default StyleSheet.create({
     resizeMode: 'contain',
     marginRight: 10
   },
+  iconSearch: {
+    height: 20,
+    width: 20,
+    resizeMode: 'contain',
+    marginRight: 10
+  },
   textName: {
     fontFamily: 'regular',
     fontSize: 14,
@@ -34,5 +40,26 @@ export default StyleSheet.create({
     lineHeight: 14,
     letterSpacing: 0.5,
     color: Colors.grey
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+    borderBottomColor: Colors.border,
+    borderBottomWidth: 1,
+    padding: Platform.OS === 'ios' ? 15 : 10
+  },
+  input: {
+    flex: 1,
+    fontFamily: 'regular',
+    fontSize: 14,
+    lineHeight: 25,
+    letterSpacing: 0.5,
+    color: Colors.grey
+  },
+  listGroupContainer: {
+    height: 70,
+    width: Dimensions.get('window').width,
+    backgroundColor: Colors.background
   }
 })
