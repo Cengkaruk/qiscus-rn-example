@@ -180,7 +180,9 @@ class ChatList extends React.Component {
     // handling new message
     if (this.state.isActive) {
       if (String(data.room_id_str) === String(this.state.id)) {
+        console.log('temp id new message: ', data.unique_temp_id)
         let tempData = await [...this.state.data]
+        console.log('in array: ;', tempData[0].unique_id)
         let index = tempData.map(function(uniq) { return uniq.unique_id; }).indexOf(data.unique_temp_id)
         const temp = {
           "attachment": null,
@@ -258,7 +260,7 @@ class ChatList extends React.Component {
       } else if (String(params).includes('0:')) {
         let tempTimestamp
         if (String(params).includes('/s')) {
-          tempTimestamp = await String(params.substring(2, params.length - 2))
+          tempTimestamp = await String(params.substring(2, 9))
         } else {
           tempTimestamp = await String(params.substring(2, params.length))
         }
@@ -644,7 +646,7 @@ class ChatList extends React.Component {
    * send message perlu temp uniq id
    */
 
-  sendMessage (item) {
+  async sendMessage (item) {
     const { id, message, firstCommentId, isReplying, nameUserReplied, emailUserReplied, messageReply, idReply, data } = this.state
     let tempData = [...data]
     let temp
@@ -660,7 +662,8 @@ class ChatList extends React.Component {
             replied_comment_sender_username: nameUserReplied,
             replied_comment_type: 'text'
           }
-          temp = {
+          let tempUniqId = String(moment().unix()) + String(Math.random(1000))
+          temp = await {
             "attachment": null,
             "avatar": this.state.photo,
             "before_id": -1,
@@ -679,7 +682,7 @@ class ChatList extends React.Component {
             "time": moment().format('HH:mm A'),
             "timestamp": moment().unix(),
             "type": 'reply',
-            "unique_id": String(moment().unix()),
+            "unique_id": tempUniqId,
             "username_as": this.state.name,
             "username_real": this.state.email
           }
@@ -689,7 +692,7 @@ class ChatList extends React.Component {
             message: '',
             isReplying: false
           })
-          qiscus.sendComment(id, message, String(moment().unix()), 'reply', JSON.stringify(payload))
+          qiscus.sendComment(id, message, tempUniqId, 'reply', JSON.stringify(payload))
             .then(() => {
               qiscus.publishTyping(0)
             })
@@ -704,7 +707,8 @@ class ChatList extends React.Component {
               })
             })
         } else {
-          temp = {
+          let tempUniqId = String(moment().unix()) + String(Math.random(1000))
+          temp = await {
             "attachment": null,
             "avatar": this.state.photo,
             "before_id": -1,
@@ -723,7 +727,7 @@ class ChatList extends React.Component {
             "time": moment().format('HH:mm A'),
             "timestamp": moment().unix(),
             "type": "text",
-            "unique_id": String(moment().unix()),
+            "unique_id": tempUniqId,
             "username_as": this.state.name,
             "username_real": this.state.email
           }
@@ -733,7 +737,7 @@ class ChatList extends React.Component {
             message: '',
             isReplying: false
           })
-          qiscus.sendComment(id, message, String(moment().unix()))
+          qiscus.sendComment(id, message, tempUniqId)
           .then(() => {
             qiscus.publishTyping(0)
           })

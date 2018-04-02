@@ -5,11 +5,12 @@
       "backgroundColor": "#ffffff",
       "barStyle": "dark-content"
     },
+    "orientation": "portrait",
     "notification": {
       "icon": "./App/Images/notification.png"
     },
     "android": {
-      "package": "com.qiscus.qiscusrn"
+      "package": "com.qiscus.chat.sample"
     },
     "icon": "./App/Images/app-icon.png"
   }
