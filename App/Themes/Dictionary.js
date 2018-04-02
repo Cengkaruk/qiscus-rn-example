@@ -40,6 +40,8 @@ export default {
     createGroupChat: 'Create Group Chat',
     contacts: 'CONTACTS',
     typing: 'Typing...',
+    groupTyping: 'Someone is typing...',
+    lastSeen: 'Last seen ',
     waitingSentMessage: 'Waiting for previous message sent',
     roomInfo: 'Room Info',
     participants: 'PARTICIPANTS',
@@ -49,6 +51,7 @@ export default {
     groupName: 'Group Name',
     deleteMember: 'Do you want delete "{{name}}"\nfrom group "{{roomName}}"?',
     yes: 'YES',
-    no: 'NO'
+    no: 'NO',
+    addParticipant: 'Add Participant'
   }
 }

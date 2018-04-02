@@ -15,6 +15,7 @@ import {
 import axios from 'axios'
 
 import { Images, Dictionary, Colors } from '../Themes'
+import { baseUri, qiscusSecret } from '../config'
 
 /**
  * import component
@@ -22,7 +23,7 @@ import { Images, Dictionary, Colors } from '../Themes'
 import { Header, ListMember} from '../Components'
 
 import styles from './Styles/ProfileGroupStyles'
-import { Actions } from 'react-native-router-flux'
+import { Actions, ActionConst } from 'react-native-router-flux'
 
 I18n.translations = Dictionary
 
@@ -36,7 +37,6 @@ class ProfileGroup extends React.Component {
       openModal: false,
       selectedUser: {},
       loading: false,
-      baseUri: 'https://sampleapp-65ghcsaysse.qiscus.com',
       callback: this.props.callback
     }
     console.log(this.props.callback)
@@ -83,6 +83,7 @@ class ProfileGroup extends React.Component {
     return (
       <View style={styles.memberContainer}>
         <Text style={styles.label}>{I18n.t('participants')}</Text>
+        {this.renderAddButton()}
         <ScrollView>
           <FlatList
             style={{ backgroundColor: Colors.background }}
@@ -110,6 +111,24 @@ class ProfileGroup extends React.Component {
           }
         }}
       />
+    )
+  }
+
+  renderAddButton () {
+    return (
+      <TouchableOpacity
+        style={styles.itemContainer}
+        onPress={() => {}}
+        activeOpacity={0.6}
+        onPress={() => this.addMember()}
+      >
+        <Image style={styles.iconAdd} source={Images.addParticipant} />
+        <View style={styles.item}>
+          <View style={{ flexDirection: 'column', flex: 1, marginRight: 15 }}>
+            <Text style={styles.textName}>{I18n.t('addParticipant')}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
     )
   }
 
@@ -152,8 +171,32 @@ class ProfileGroup extends React.Component {
     )
   }
 
+  addMember () {
+    const { id, data } = this.state
+    let tempData = []
+    let temp
+    for (let i = 0; i < data.length; i++) {
+      temp = {
+        avatar_url: data[i].avatar_url,
+        created_at: "2018-03-25T06:10:45.465709Z", // default
+        email: data[i].email,
+        id: data[i].id,
+        name: data[i].username,
+        updated_at: "2018-03-25T06:10:45.465709Z", // default
+        username: data[i].username,
+      }
+      tempData.push(temp)
+    }
+    Actions.contact({
+      type: ActionConst.PUSH,
+      dataGroup: tempData,
+      typeContact: 'addmember',
+      id: id
+    })
+  }
+
   deleteMember () {
-    const { id, selectedUser, baseUri } = this.state
+    const { id, selectedUser } = this.state
     let tempData = [...this.state.data]
     let index = tempData.indexOf(selectedUser)
     this.setState({
@@ -167,7 +210,7 @@ class ProfileGroup extends React.Component {
         }
       ,{
         timeout: 5000,
-        headers: {'QISCUS_SDK_SECRET': 'dc0c7e608d9a23c3c8012c6c8572e788'}
+        headers: {'QISCUS_SDK_SECRET': qiscusSecret}
       })
       .then((response) => {
         tempData.splice(index, 1)
@@ -175,7 +218,6 @@ class ProfileGroup extends React.Component {
           loading: false,
           data: tempData
         })
-        console.log('respon: ', response)
       })
       .catch((error) => {
         this.setState({

@@ -5,6 +5,9 @@
       "backgroundColor": "#ffffff",
       "barStyle": "dark-content"
     },
+    "notification": {
+      "icon": "./App/Images/notification.png"
+    },
     "android": {
       "package": "com.qiscus.qiscusrn"
     },

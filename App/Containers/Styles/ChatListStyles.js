@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions } from 'react-native'
+import { StyleSheet, Dimensions, Platform } from 'react-native'
 import { Colors } from '../../Themes'
 
 export default StyleSheet.create({
@@ -9,7 +9,7 @@ export default StyleSheet.create({
   dateContainer: {
     position: 'absolute',
     zIndex: 99,
-    top: 64,
+    top: Platform.OS === 'ios' ? 84 : 64,
     width: Dimensions.get('window').width,
     alignItems: 'center',
     justifyContent: 'center'

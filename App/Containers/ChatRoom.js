@@ -68,6 +68,7 @@ class ChatRoom extends React.Component {
           // emitter.emit('delivered', data)
         },
         commentReadCallback: (data) => {
+          this.loadRoom()
           emitter.emit('read', data)
         }
       }
@@ -158,7 +159,7 @@ class ChatRoom extends React.Component {
         <View />
       )
     } else {
-      view = data.length > 1 ? this.renderList() :
+      view = data.length > 0 ? this.renderList() :
         <EmptyState
           type='room'
           showButton

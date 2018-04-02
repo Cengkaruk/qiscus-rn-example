@@ -12,8 +12,10 @@ import {
 } from 'react-native'
 
 import { Actions, ActionConst } from 'react-native-router-flux'
+import axios from 'axios'
 import { Images, Dictionary } from '../Themes'
 import qiscus from '../../libs/SDKCore'
+import { baseUri } from '../config'
 
 /**
  * import component
@@ -125,13 +127,37 @@ class Login extends React.Component {
   }
 
   async successLogin (data) {
-    Actions.chatroom({
-      type: ActionConst.RESET, // reset the navigator to ListChat container
-      photo: data.results.user.avatar_url, // passing params to chat room container
-      email: this.state.email,
-      qiscus: qiscus
-    })
-    AsyncStorage.setItem('token', data.results.user.token)
+    let platform = Platform.OS === 'ios' ? 'ios' : 'android'
+    let tokenType = Platform.OS === 'ios' ? 'ios device_token' : 'fcm_token'
+
+    axios.post(baseUri + '/api/v2/mobile/set_user_device_token',
+      {
+        token: qiscus.userData.token,
+        device_token: tokenType,
+        device_platform: platform
+      }
+      , {
+        timeout: 5000
+      })
+      .then((response) => {
+        this.setState({
+          loading: false
+        })
+        // console.log(response)
+        Actions.chatroom({
+          type: ActionConst.RESET, // reset the navigator to ListChat container
+          photo: data.results.user.avatar_url, // passing params to chat room container
+          email: this.state.email,
+          qiscus: qiscus
+        })
+        AsyncStorage.setItem('token', data.results.user.token)
+      })
+      .catch((error) => {
+        this.setState({
+          loading: false
+        })
+        console.log('error: ', error)
+      })
   }
 
   errorLogin (data) {

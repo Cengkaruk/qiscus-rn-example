@@ -64,7 +64,8 @@ class ChatList extends React.Component {
         photo: ''
       },
       pendingMessage: false,
-      callback: true
+      callback: true,
+      lastSeen: ''
     } 
   }
 
@@ -101,7 +102,25 @@ class ChatList extends React.Component {
   loadRoom () {
     qiscus.getRoomById(this.props.id).then(data => {
       try {
-        const reversedData = data.comments.length > 0 ? [...data.comments].reverse() : []
+        let reversedData = data.comments.length > 0 ? [...data.comments].reverse() : []
+        let arrayFilter = []
+        let arrayDuplicate = []
+        for (let i = 0; i < reversedData.length; i++) {
+          let isDuplicate = false
+          for (let j = 0; j < reversedData.length; j++) {
+            if (i !== j && i > j) {
+              if (reversedData[i].unique_id === reversedData[j].unique_id) {
+                isDuplicate = true
+              }
+            }
+          }
+          if (!isDuplicate) {
+            let index = arrayDuplicate.map(function(val) { return val.unique_id; }).indexOf(reversedData[i].unique_id)
+            if (index < 0) {
+              arrayFilter.push(reversedData[i])
+            }
+          }
+        }
         if (this.props.typeRoom === 'group') {
           let tempDataGroup = {
             name: this.props.roomName,
@@ -112,13 +131,13 @@ class ChatList extends React.Component {
           })
         }
         this.setState({
-          data: reversedData,
+          data: arrayFilter,
           loading: false,
-          lastMessageDate: reversedData[0].timestamp,
+          lastMessageDate: arrayFilter[0].timestamp,
           type: this.props.typeRoom,
           photo: data.avatar,
-          lastCommentId: reversedData[reversedData.length - 1].id,
-          firstCommentId: reversedData[0].id,
+          lastCommentId: arrayFilter[arrayFilter.length - 1].id,
+          firstCommentId: arrayFilter[0].id,
           participants: data.participants
         })
       } catch (e) {
@@ -157,11 +176,11 @@ class ChatList extends React.Component {
     return true // to prevent apps to exit
   }
 
-  newMessage (data) {
+  async newMessage (data) {
     // handling new message
     if (this.state.isActive) {
       if (String(data.room_id_str) === String(this.state.id)) {
-        let tempData = [...this.state.data]
+        let tempData = await [...this.state.data]
         let index = tempData.map(function(uniq) { return uniq.unique_id; }).indexOf(data.unique_temp_id)
         const temp = {
           "attachment": null,
@@ -230,15 +249,22 @@ class ChatList extends React.Component {
     }
   }
 
-  handleStatus (params) {
+  async handleStatus (params) {
     if (this.state.isActive) {
       if (String(params).includes('1:')) {
         this.setState({
           isOnline: true
         })
-      } else {
+      } else if (String(params).includes('0:')) {
+        let tempTimestamp
+        if (String(params).includes('/s')) {
+          tempTimestamp = await String(params.substring(2, params.length - 2))
+        } else {
+          tempTimestamp = await String(params.substring(2, params.length))
+        }
         this.setState({
-          isOnline: false
+          isOnline: false,
+          lastSeen: I18n.t('lastSeen') + moment(parseInt(tempTimestamp)).format('HH:mm A')
         })
       }
     }
@@ -340,6 +366,7 @@ class ChatList extends React.Component {
         isRead={item.isRead}
         isSent={item.isSent}
         onLongPress={() => this.onMessagePressed(item)}
+        retryMessage={() => this.sendMessage(item)}
       />
     )
   }
@@ -617,90 +644,203 @@ class ChatList extends React.Component {
    * send message perlu temp uniq id
    */
 
-  sendMessage () {
+  sendMessage (item) {
     const { id, message, firstCommentId, isReplying, nameUserReplied, emailUserReplied, messageReply, idReply, data } = this.state
     let tempData = [...data]
     let temp
-    if (message.length > 0) {
-      if (isReplying) {
-        const payload = {
-          text: message,
-          replied_comment_id: idReply,
-          replied_comment_message: messageReply,
-          replied_comment_payload: null,
-          replied_comment_sender_email: emailUserReplied,
-          replied_comment_sender_username: nameUserReplied,
-          replied_comment_type: 'text'
-        }
-        temp = {
-          "attachment": null,
-          "avatar": this.state.photo,
-          "before_id": -1,
-          "date": -1,
-          "id": String(moment().unix()),
-          "isDelivered": false,
-          "isFailed": false,
-          "isPending": true,
-          "isRead": false,
-          "isSent": false,
-          "is_deleted": false,
-          "message": message,
-          "payload": payload,
-          "status": "read",
-          "subtype": null,
-          "time": moment().format('HH:mm A'),
-          "timestamp": moment().unix(),
-          "type": 'reply',
-          "unique_id": String(moment().unix()),
-          "username_as": this.state.name,
-          "username_real": this.state.email
-        }
-        tempData.unshift(temp)
-        this.setState({
-          data: tempData,
-          message: '',
-          isReplying: false
-        })
-        qiscus.sendComment(id, message, String(moment().unix()), 'reply', JSON.stringify(payload))
+    if (item === undefined || item === null) {
+      if (message.length > 0) {
+        if (isReplying) {
+          const payload = {
+            text: message,
+            replied_comment_id: idReply,
+            replied_comment_message: messageReply,
+            replied_comment_payload: null,
+            replied_comment_sender_email: emailUserReplied,
+            replied_comment_sender_username: nameUserReplied,
+            replied_comment_type: 'text'
+          }
+          temp = {
+            "attachment": null,
+            "avatar": this.state.photo,
+            "before_id": -1,
+            "date": -1,
+            "id": String(moment().unix()),
+            "isDelivered": false,
+            "isFailed": false,
+            "isPending": true,
+            "isRead": false,
+            "isSent": false,
+            "is_deleted": false,
+            "message": message,
+            "payload": payload,
+            "status": "read",
+            "subtype": null,
+            "time": moment().format('HH:mm A'),
+            "timestamp": moment().unix(),
+            "type": 'reply',
+            "unique_id": String(moment().unix()),
+            "username_as": this.state.name,
+            "username_real": this.state.email
+          }
+          tempData.unshift(temp)
+          this.setState({
+            data: tempData,
+            message: '',
+            isReplying: false
+          })
+          qiscus.sendComment(id, message, String(moment().unix()), 'reply', JSON.stringify(payload))
+            .then(() => {
+              qiscus.publishTyping(0)
+            })
+            .catch((e) => {
+              let tempArrayFailedData = [...tempData]
+              let failedTempData = tempArrayFailedData[0]
+              failedTempData.isPending = false
+              failedTempData.isFailed = true
+              tempArrayFailedData[0] = failedTempData
+              this.setState({
+                data: tempArrayFailedData
+              })
+            })
+        } else {
+          temp = {
+            "attachment": null,
+            "avatar": this.state.photo,
+            "before_id": -1,
+            "date": -1,
+            "id": String(moment().unix()),
+            "isDelivered": false,
+            "isFailed": false,
+            "isPending": true,
+            "isRead": false,
+            "isSent": false,
+            "is_deleted": false,
+            "message": message,
+            "payload": null,
+            "status": "read",
+            "subtype": null,
+            "time": moment().format('HH:mm A'),
+            "timestamp": moment().unix(),
+            "type": "text",
+            "unique_id": String(moment().unix()),
+            "username_as": this.state.name,
+            "username_real": this.state.email
+          }
+          tempData.unshift(temp)
+          this.setState({
+            data: tempData,
+            message: '',
+            isReplying: false
+          })
+          qiscus.sendComment(id, message, String(moment().unix()))
           .then(() => {
             qiscus.publishTyping(0)
           })
-          .catch((e) => ToastAndroid.show(e, ToastAndroid.SHORT))
-      } else {
-        temp = {
-          "attachment": null,
-          "avatar": this.state.photo,
-          "before_id": -1,
-          "date": -1,
-          "id": String(moment().unix()),
-          "isDelivered": false,
-          "isFailed": false,
-          "isPending": true,
-          "isRead": false,
-          "isSent": false,
-          "is_deleted": false,
-          "message": message,
-          "payload": null,
-          "status": "read",
-          "subtype": null,
-          "time": moment().format('HH:mm A'),
-          "timestamp": moment().unix(),
-          "type": "text",
-          "unique_id": String(moment().unix()),
-          "username_as": this.state.name,
-          "username_real": this.state.email
+          .catch((e) => {
+            let tempArrayFailedData = [...tempData]
+            let failedTempData = tempArrayFailedData[0]
+            failedTempData.isPending = false
+            failedTempData.isFailed = true
+            tempArrayFailedData[0] = failedTempData
+            this.setState({
+              data: tempArrayFailedData
+            })
+          })
         }
-        tempData.unshift(temp)
-        this.setState({
-          data: tempData,
-          message: '',
-          isReplying: false
-        })
-        qiscus.sendComment(id, message, String(moment().unix()))
-        .then(() => {
-          qiscus.publishTyping(0)
-        })
-        .catch((e) => ToastAndroid.show(e, ToastAndroid.SHORT))
+      }
+    } else {
+      if (item.message.length > 0) {
+        if (item.payload === undefined || item.payload === null) {
+          temp = {
+            "attachment": null,
+            "avatar": this.state.photo,
+            "before_id": -1,
+            "date": -1,
+            "id": item.id,
+            "isDelivered": false,
+            "isFailed": false,
+            "isPending": true,
+            "isRead": false,
+            "isSent": false,
+            "is_deleted": false,
+            "message": item.message,
+            "payload": null,
+            "status": "read",
+            "subtype": null,
+            "time": item.time,
+            "timestamp": item.timestamp,
+            "type": 'reply',
+            "unique_id": item.unique_id,
+            "username_as": this.state.name,
+            "username_real": this.state.email
+          }
+          let index = tempData.map(function(uniq) { return uniq.unique_id; }).indexOf(item.unique_id)
+          tempData[index].isFailed = false
+          tempData[index].isPending = true
+          this.setState({
+            data: tempData
+          })
+          qiscus.sendComment(id, item.message, item.unique_id)
+          .then(() => {
+            qiscus.publishTyping(0)
+          })
+          .catch((e) => {
+            let tempArrayFailedData = [...tempData]
+            let failedTempData = tempArrayFailedData[index]
+            failedTempData.isPending = false
+            failedTempData.isFailed = true
+            tempArrayFailedData[index] = failedTempData
+            this.setState({
+              data: tempArrayFailedData
+            })
+          })
+        } else {
+          const payload = item.payload
+          temp = {
+            "attachment": null,
+            "avatar": this.state.photo,
+            "before_id": -1,
+            "date": -1,
+            "id": item.id,
+            "isDelivered": false,
+            "isFailed": false,
+            "isPending": true,
+            "isRead": false,
+            "isSent": false,
+            "is_deleted": false,
+            "message": item.message,
+            "payload": payload,
+            "status": "read",
+            "subtype": null,
+            "time": item.time,
+            "timestamp": item.timestamp,
+            "type": 'reply',
+            "unique_id": item.unique_id,
+            "username_as": this.state.name,
+            "username_real": this.state.email
+          }
+          let index = tempData.map(function(uniq) { return uniq.unique_id; }).indexOf(item.unique_id)
+          tempData[index].isFailed = false
+          tempData[index].isPending = true
+          this.setState({
+            data: tempData
+          })
+          qiscus.sendComment(id, item.message, item.unique_id, 'reply', JSON.stringify(payload))
+            .then(() => {
+              qiscus.publishTyping(0)
+            })
+            .catch((e) => {
+              let tempArrayFailedData = [...tempData]
+              let failedTempData = tempArrayFailedData[index]
+              failedTempData.isPending = false
+              failedTempData.isFailed = true
+              tempArrayFailedData[index] = failedTempData
+              this.setState({
+                data: tempArrayFailedData
+              })
+            })
+        }
       }
     }
   }
@@ -732,7 +872,7 @@ class ChatList extends React.Component {
   }
 
   render () {
-    const { data, loading, photo, isTyping, isOnline } = this.state
+    const { data, loading, photo, isTyping, isOnline, type, lastSeen } = this.state
     let view, renderDate, renderInput, subtitle
     if (loading) {
       view = (
@@ -744,11 +884,11 @@ class ChatList extends React.Component {
       renderInput = this.renderInput()
     }
     if (isTyping) {
-      subtitle = I18n.t('typing')
+      subtitle = type === 'single' ? I18n.t('typing') : I18n.t('groupTyping')
     } else if (isOnline) {
       subtitle = I18n.t('online')
     } else {
-      subtitle = ''
+      subtitle = lastSeen
     }
     return (
       <View style={styles.container}>

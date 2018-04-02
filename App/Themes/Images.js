@@ -38,7 +38,8 @@ const images = {
   searchContact: require('../Images/searchContact.png'),
   isChecking: require('../Images/isChecking.png'),
   check: require('../Images/check.png'),
-  groupAvatar: require('../Images/groupAvatar.png')
+  groupAvatar: require('../Images/groupAvatar.png'),
+  addParticipant: require('../Images/addParticipant.png')
 }
 
 export default images

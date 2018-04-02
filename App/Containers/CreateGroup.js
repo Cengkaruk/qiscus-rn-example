@@ -12,6 +12,7 @@ import {
 } from 'react-native'
 import { ImagePicker } from 'expo'
 import axios from 'axios'
+import { baseUriUploadImage } from '../config'
 
 import { Actions, ActionConst } from 'react-native-router-flux'
 import { Images, Dictionary, Colors } from '../Themes'
@@ -219,11 +220,11 @@ class CreateGroup extends React.Component {
     for (let i = 0; i < data.length; i++) {
       tempData.push(data[i].email)
     }
-    if (name !== '' && photo.length > 1) {
+    if (name !== '' && photo.length > 0) {
       this.setState({ loading: true })
         const form = new FormData()
         form.append('file', { uri: photo, type: 'image/jpg', name: 'image.jpg' })
-        axios.post('https://sdksample.qiscus.com/api/v2/mobile/upload',
+        axios.post(baseUriUploadImage,
           form
         ,{
           timeout: 10000

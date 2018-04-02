@@ -16,6 +16,7 @@ import axios from 'axios'
 
 import { Actions, ActionConst } from 'react-native-router-flux'
 import { Images, Dictionary, Colors } from '../Themes'
+import { baseUri, qiscusSecret, baseUriContact } from '../config'
 
 /**
  * import component
@@ -31,22 +32,30 @@ class Contact extends React.Component {
     super(props)
     this.state = {
       loading: true,
-      uri: 'https://dashboard-sample.herokuapp.com/api/contacts?limit=10&page=',
       data: [],
       dataGroup: [],
       page: 1,
       loadmore: true,
       gettingData: true,
       isCreatingGroup: false,
-      searchContact: ''
+      searchContact: '',
+      typeContact: this.props.typeContact,
+      id: this.props.id,
+      isNewGroup: true
     }
   }
 
   qiscus = this.props.qiscus
   emitter = this.props.emitter
 
-  componentDidMount () {
-    this.loadContact()
+  async componentDidMount () {
+    let type = await this.props.typeContact
+    if (type === undefined){
+      this.loadContact()
+    } else {
+      this.setState({ isCreatingGroup: true, dataGroup: this.props.dataGroup, isNewGroup: false })
+      this.loadContact()
+    }
     this.setState({
       gettingData: false
     })
@@ -59,10 +68,14 @@ class Contact extends React.Component {
 
   backAndroid () {
     const { isCreatingGroup } = this.state
-    if (isCreatingGroup) {
-      this.setState({
-        isCreatingGroup: false
-      })
+    if (this.props.typeContact === undefined) {
+      if (isCreatingGroup) {
+        this.setState({
+          isCreatingGroup: false
+        })
+      } else {
+        Actions.pop()
+      }
     } else {
       Actions.pop()
     }
@@ -70,18 +83,27 @@ class Contact extends React.Component {
   }
 
   async loadContact () {
-    const { uri, page, loadmore, loading, gettingData } = this.state
+    const { page, loadmore, loading, gettingData, dataGroup } = this.state
     if (!loading || gettingData) {
       if (loadmore) {
         this.setState({
           loading: true
         })
-        await axios.get(uri + page)
+        await axios.get(baseUriContact + page)
         .then(response => {
           let data = response.data.results.users
           let tempData = []
           for (let i = 0; i < data.length; i++) {
-            data[i].isChecking = false
+            if (dataGroup.length > 0) {
+              let index = dataGroup.map(function(item) { return item.email; }).indexOf(data[i].email)
+              if (index > -1) {
+                data[i].isChecking = true
+              } else {
+                data[i].isChecking = false
+              }
+            } else {
+              data[i].isChecking = false
+            }
           }
           tempData = [...data]
           let loadmore = data < 10 ? false : true
@@ -227,10 +249,22 @@ class Contact extends React.Component {
         })
       }
     } else {
-      qiscus.chatTarget(email)
-      .then(result => {
-        this.openChat(result)
-      }, err => console.log(err))
+      let myEmail = qiscus.userData.email
+      if (myEmail === email) {
+        let data = qiscus.userData
+        Actions.profile({
+          type: ActionConst.PUSH,
+          typeProfile: 'self',
+          qiscus: qiscus,
+          data: data,
+          emitter: this.emitter
+        })
+      } else {
+        qiscus.chatTarget(email)
+        .then(result => {
+          this.openChat(result)
+        }, err => console.log(err))
+      }
     }
   }
 
@@ -258,14 +292,45 @@ class Contact extends React.Component {
   }
 
   createGroup () {
-    const { dataGroup } = this.state
+    const { dataGroup, isNewGroup, id } = this.state
     if (dataGroup.length > 0) {
-      Actions.creategroup({
-        type: ActionConst.PUSH,
-        data: dataGroup,
-        emitter: this.emitter,
-        qiscus: this.qiscus
-      })
+      if (isNewGroup) {
+        Actions.creategroup({
+          type: ActionConst.PUSH,
+          data: dataGroup,
+          emitter: this.emitter,
+          qiscus: this.qiscus
+        })
+      } else {
+        this.setState({
+          loading: true
+        })
+        let tempData = []
+        for (let i = 0; i < dataGroup.length; i++) {
+          tempData.push(dataGroup[i].email)
+        }
+        axios.post(baseUri + '/api/v2/rest/add_room_participants',
+            {
+              room_id: id,
+              emails: tempData
+            }
+          ,{
+            timeout: 5000,
+            headers: {'QISCUS_SDK_SECRET': qiscusSecret}
+          })
+          .then((response) => {
+            this.setState({
+              loading: false
+            })
+            Actions.pop()
+          })
+          .catch((error) => {
+            this.setState({
+              loading: false
+            })
+            console.log('error: ', error)
+          })
+      }
     }
   }
 
@@ -300,7 +365,7 @@ class Contact extends React.Component {
           onLeftPress={() => this.backAndroid()}
           title={isCreatingGroup ? I18n.t('chooseContacts') : I18n.t('newConversations')}
           showRightButton={isCreatingGroup}
-          rightButtonImage={Images.nextArrow}
+          rightButtonImage={this.props.typeContact === undefined ? Images.nextArrow : Images.check}
           onRightPress={() => this.createGroup()}
         />
         {view}

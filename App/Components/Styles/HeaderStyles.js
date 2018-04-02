@@ -3,10 +3,10 @@ import { Colors } from '../../Themes'
 
 export default StyleSheet.create({
   container: {
-    height: Platform.OS === 'ios' ? 64 : 54,
+    height: Platform.OS === 'ios' ? 74 : 54,
     padding: 10,
     paddingBottom: 0,
-    paddingTop: Platform.OS === 'ios' ? 20 : 0,
+    paddingTop: Platform.OS === 'ios' ? 24 : 0,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.background,

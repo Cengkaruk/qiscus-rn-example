@@ -86,5 +86,34 @@ export default StyleSheet.create({
     backgroundColor: Colors.green,
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  itemContainer: {
+    backgroundColor: Colors.background,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    paddingRight: 15
+  },
+  iconAdd: {
+    marginTop: -5,
+    height: 30,
+    width: 30,
+    resizeMode: 'contain'
+  },
+  item: {
+    flexDirection: 'row',
+    flex: 1,
+    marginLeft: 15,
+    alignItems: 'center',
+    paddingTop: 10,
+    paddingBottom: 15,
+    borderBottomColor: Colors.border,
+    borderBottomWidth: 1
+  },
+  textName: {
+    fontFamily: 'regular',
+    fontSize: 14,
+    lineHeight: 19,
+    color: Colors.black
   }
 })

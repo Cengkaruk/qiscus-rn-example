@@ -130,13 +130,13 @@ export default class ListChat extends React.PureComponent {
   }
 
   renderMessageRetry () {
-    const { isFailed } = this.state
+    const { isFailed } = this.props
     if (isFailed) {
       return (
         <View style={{ flexDirection: 'row', marginRight: 5, marginBottom: 5 }}>
           <View style={{ flex: 1 }} />
           <Text style={styles.textFailed}>{I18n.t('isFailed')}</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => this.props.retryMessage()}>
             <Text style={[styles.textFailed, { color: Colors.green }]}>{I18n.t('retry')}</Text>
           </TouchableOpacity>
         </View>

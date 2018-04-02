@@ -11,7 +11,8 @@ export default StyleSheet.create({
   },
   photo: {
     height: 30,
-    width: 30
+    width: 30,
+    marginTop: -5
   },
   item: {
     flexDirection: 'row',
@@ -19,7 +20,7 @@ export default StyleSheet.create({
     marginLeft: 15,
     alignItems: 'center',
     paddingTop: 10,
-    paddingBottom: 10,
+    paddingBottom: 15,
     borderBottomColor: Colors.border,
     borderBottomWidth: 1
   },

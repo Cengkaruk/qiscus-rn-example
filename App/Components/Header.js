@@ -94,20 +94,38 @@ export default class Header extends React.Component {
         </View>
       )
     } else {
-      if (this.props.subtitle === I18n.t('online') || this.props.subtitle === I18n.t('typing')) {
-        subtitle = (
-          <Text style={styles.textOnline}>
-            {this.props.subtitle}
-          </Text>
-        )
-      } else if (this.props.subtitle === '') {
-        subtitle = null
-      } else {
-        subtitle = (
-          <Text style={styles.textSubtitle}>
-            {this.props.subtitle}
-          </Text>
-        )
+      switch (this.props.subtitle) {
+        case I18n.t('online'):
+          subtitle = (
+            <Text style={styles.textOnline}>
+              {this.props.subtitle}
+            </Text>
+          )
+          break
+        case I18n.t('typing'):
+          subtitle = (
+            <Text style={styles.textOnline}>
+              {this.props.subtitle}
+            </Text>
+          )
+          break
+        case I18n.t('groupTyping'):
+          subtitle = (
+            <Text style={styles.textOnline}>
+              {this.props.subtitle}
+            </Text>
+          )
+          break
+        case '':
+          subtitle = null
+          break
+        default:
+          subtitle = (
+            <Text style={styles.textSubtitle}>
+              {this.props.subtitle}
+            </Text>
+          )
+          break
       }
       title = (
         <View style={styles.title}>
