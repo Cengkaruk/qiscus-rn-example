@@ -14,6 +14,7 @@ import ImageLoad from 'react-native-image-placeholder'
 import styles from './Styles/ListChatStyles'
 import { Colors, Images, Dictionary } from '../Themes'
 
+I18n.locale = 'en'
 I18n.translations = Dictionary
 
 export default class ListChat extends React.PureComponent {
@@ -68,7 +69,7 @@ export default class ListChat extends React.PureComponent {
   }
   
   renderMessage (message) {
-    let extImage = ['jpg','gif','jpeg','png', 'JPG', 'GIF', 'JPEG', 'PNG']
+    let extImage = ['.jpg','.gif','.jpeg','.png', '.JPG', '.GIF', '.JPEG', '.PNG']
     let messageImage
     let isImage = extImage.find((data) => message.includes(data))
     if (this.props.payload !== null && this.props.payload !== undefined && this.props.payload.url === undefined) {
@@ -130,13 +131,13 @@ export default class ListChat extends React.PureComponent {
   }
 
   renderMessageRetry () {
-    const { isFailed } = this.state
+    const { isFailed } = this.props
     if (isFailed) {
       return (
         <View style={{ flexDirection: 'row', marginRight: 5, marginBottom: 5 }}>
           <View style={{ flex: 1 }} />
           <Text style={styles.textFailed}>{I18n.t('isFailed')}</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => this.props.retryMessage()}>
             <Text style={[styles.textFailed, { color: Colors.green }]}>{I18n.t('retry')}</Text>
           </TouchableOpacity>
         </View>

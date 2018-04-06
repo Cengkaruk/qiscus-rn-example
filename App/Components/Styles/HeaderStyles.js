@@ -1,12 +1,12 @@
 import { StyleSheet, Platform } from 'react-native'
-import { Colors } from '../../Themes'
+import { Colors, Fonts } from '../../Themes'
 
 export default StyleSheet.create({
   container: {
-    height: Platform.OS === 'ios' ? 64 : 54,
+    height: Platform.OS === 'ios' ? 74 : 54,
     padding: 10,
     paddingBottom: 0,
-    paddingTop: Platform.OS === 'ios' ? 20 : 0,
+    paddingTop: Platform.OS === 'ios' ? 24 : 0,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.background,
@@ -37,18 +37,18 @@ export default StyleSheet.create({
     justifyContent: 'center'
   },
   textTitle: {
-    fontFamily: 'semiBold',
+    fontFamily: Fonts.type.semiBold,
     fontSize: 18,
     lineHeight: 25
   },
   textOnline: {
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 12,
     lineHeight: 15,
     color: Colors.green
   },
   textSubtitle: {
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 12,
     lineHeight: 15,
     color: Colors.label

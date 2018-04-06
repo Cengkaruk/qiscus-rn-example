@@ -28,6 +28,7 @@ import styles from './Styles/ChatRoomStyles'
 import EventEmitter from 'EventEmitter'
 const emitter = new EventEmitter()
 
+I18n.locale = 'en'
 I18n.translations = Dictionary
 
 class ChatRoom extends React.Component {
@@ -53,10 +54,10 @@ class ChatRoom extends React.Component {
       options: {
         newMessagesCallback: (comments) => {
           this.loadRoom()
-          console.log('new message')
           emitter.emit('new message', comments[0]) // emitter name is new message
         },
         chatRoomCreatedCallback: (data) => {
+          this.loadRoom()
         },
         typingCallback: (data) => {
           emitter.emit('typing', data)
@@ -68,6 +69,7 @@ class ChatRoom extends React.Component {
           // emitter.emit('delivered', data)
         },
         commentReadCallback: (data) => {
+          this.loadRoom()
           emitter.emit('read', data)
         }
       }
@@ -146,7 +148,6 @@ class ChatRoom extends React.Component {
       email: this.state.email,
       typeRoom: typeRoom,
       qiscus: qiscus,
-      comments: this.state.comments,
       emitter: emitter // proping emitter for chat list component
     })
   }
@@ -159,7 +160,7 @@ class ChatRoom extends React.Component {
         <View />
       )
     } else {
-      view = data.length > 1 ? this.renderList() :
+      view = data.length > 0 ? this.renderList() :
         <EmptyState
           type='room'
           showButton

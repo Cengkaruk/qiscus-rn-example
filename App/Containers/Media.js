@@ -7,13 +7,17 @@ import {
   TextInput,
   ToastAndroid,
   Platform,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  PermissionsAndroid
 } from 'react-native'
 
 import axios from 'axios'
+import { baseUriUploadImage } from '../config'
 import { Actions, ActionConst } from 'react-native-router-flux'
-import { ImagePicker } from 'expo'
+// import { ImagePicker } from 'expo'
 import { Images, Dictionary } from '../Themes'
+
+var ImagePicker = require('react-native-image-picker')
 
 /**
  * import component
@@ -22,6 +26,7 @@ import { Header } from '../Components'
 
 import styles from './Styles/MediaStyles'
 
+I18n.locale = 'en'
 I18n.translations = Dictionary
 
 class Media extends React.Component {
@@ -40,47 +45,81 @@ class Media extends React.Component {
   qiscus = this.props.qiscus
 
   async componentDidMount () {
+    if (Platform.OS === 'ios') {
+      this.openMedia()
+    } else {
+      try {
+        const responseCamera = await PermissionsAndroid.check('android.permission.CAMERA')
+        const responseStorage = await PermissionsAndroid.check('android.permission.READ_EXTERNAL_STORAGE')
+        if (!responseCamera || !responseStorage) {
+          this.requestCameraPermission(this.openMedia())
+        } else {
+          this.openMedia()
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  }
+
+  async openMedia () {
     const type = await this.props.typeAttach
     if (type === 'camera') {
-      setTimeout(() => {
-        this.openCamera()
-      }, 500)
+      this.openCamera()
     } else {
-      setTimeout(() => {
-        this.openGallery()
-      }, 600)
+      this.openGallery()
+    }
+  }
+
+  async requestCameraPermission (callback) {
+    try {
+      const granted = await PermissionsAndroid.requestMultiple(
+        [PermissionsAndroid.PERMISSIONS.CAMERA, PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE]
+      )
+      console.tron.log(granted)
+      if (granted['android.permission.CAMERA'] === PermissionsAndroid.RESULTS.GRANTED &&
+        granted['android.permission.READ_EXTERNAL_STORAGE'] === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Camera permission granted')
+        callback()
+      } else {
+        console.log('Camera permission denied')
+      }
+    } catch (err) {
+      console.log(err)
     }
   }
 
   openCamera = async () => {
-    let result = await ImagePicker.launchCameraAsync({
-      quality: 0.5,
-      aspect: [4, 3],
-      allowsEditing: true
-    })
-    this.setState({
-      imageUri: result.uri,
-      imageName: I18n.t('defaultImageName')
-    })
-    if (result.cancelled) {
-      this.back()
-    }
+    setTimeout(() => {
+      ImagePicker.launchCamera({}, (response)  => {
+        if (response.didCancel) {
+          this.back()
+        } else if (response.error) {
+          console.log('ImagePicker Error: ', response.error);
+        }
+        this.setState({
+          imageUri: response.uri,
+          imageName: I18n.t('defaultImageName')
+        })
+      })
+    }, 600)
   }
 
   openGallery = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      quality: 0.5,
-      mediaTypes: 'Images',
-      aspect: [4, 3],
-      allowsEditing: true
-    })
-    this.setState({
-      imageUri: result.uri,
-      imageName: I18n.t('defaultImageName')
-    })
-    if (result.cancelled) {
-      this.back()
-    }
+    setTimeout(() => {
+      ImagePicker.launchImageLibrary({}, (result)  => {
+        if (result.didCancel) {
+          this.back()
+        } else if (result.error) {
+          console.log('ImagePicker Error: ', result.error);
+        }
+        this.setState({
+          imageUri: result.uri,
+          imageName: I18n.t('defaultImageName')
+        })
+      })
+    }, 600)
+    console.log('here')
   }
 
   back () {
@@ -144,7 +183,7 @@ class Media extends React.Component {
         this.setState({ loading: true })
         const form = new FormData()
         form.append('file', { uri: imageUri, type: 'image/jpg', name: 'image.jpg' })
-        axios.post('https://sdksample.qiscus.com/api/v2/mobile/upload',
+        axios.post(baseUriUploadImage,
           form
         ,{
           timeout: 10000

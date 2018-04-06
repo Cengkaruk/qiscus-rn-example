@@ -1,5 +1,5 @@
 import { StyleSheet, Dimensions } from 'react-native'
-import { Colors } from '../../Themes'
+import { Colors, Fonts } from '../../Themes'
 
 export default StyleSheet.create({
   container: {
@@ -38,7 +38,7 @@ export default StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 14,
     lineHeight: 25,
     letterSpacing: 0.5,

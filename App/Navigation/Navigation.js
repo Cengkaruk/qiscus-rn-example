@@ -17,7 +17,7 @@ import Media from '../Containers/Media'
 import Profile from '../Containers/Profile'
 import ProfileGroup from '../Containers/ProfileGroup'
 import Contact from '../Containers/Contact'
-import App from '../Containers/App'
+import CreateGroup from '../Containers/CreateGroup'
 
 /**
  * key is the variable we used to call the container (can be pop, push, reset, etc)
@@ -76,10 +76,10 @@ const Navigation = () => (
         component={Contact}
       />
       <Scene
-        key='app'
-        title='CustomNavBar 2'
+        key='creategroup'
+        title=''
         hideNavBar
-        component={App}
+        component={CreateGroup}
       />
     </Stack>
   </Router>

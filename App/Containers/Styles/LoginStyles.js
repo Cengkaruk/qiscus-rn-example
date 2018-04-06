@@ -24,7 +24,7 @@ export default StyleSheet.create({
     height: 56
   },
   separator: {
-    marginTop: 40
+    marginTop: 20
   },
   buttonContainer: {
     marginTop: 50

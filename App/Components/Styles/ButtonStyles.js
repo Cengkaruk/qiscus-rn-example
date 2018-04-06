@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native'
-import { Colors } from '../../Themes'
+import { Colors, Fonts } from '../../Themes'
 
 export default StyleSheet.create({
   container: {
@@ -24,13 +24,13 @@ export default StyleSheet.create({
     backgroundColor: Colors.green
   },
   nextArrow: {
-    height: 18,
-    width: 18,
+    height: 20,
+    width: 20,
     resizeMode: 'contain',
     tintColor: Colors.background
   },
   textButton: {
-    fontFamily: 'semiBold',
+    fontFamily: Fonts.type.semiBold,
     fontSize: 14,
     lineHeight: 19,
     marginRight: 5,

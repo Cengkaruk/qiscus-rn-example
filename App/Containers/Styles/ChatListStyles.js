@@ -1,5 +1,5 @@
-import { StyleSheet, Dimensions } from 'react-native'
-import { Colors } from '../../Themes'
+import { StyleSheet, Dimensions, Platform } from 'react-native'
+import { Colors, Fonts } from '../../Themes'
 
 export default StyleSheet.create({
   container: {
@@ -9,7 +9,7 @@ export default StyleSheet.create({
   dateContainer: {
     position: 'absolute',
     zIndex: 99,
-    top: 64,
+    top: Platform.OS === 'ios' ? 84 : 64,
     width: Dimensions.get('window').width,
     alignItems: 'center',
     justifyContent: 'center'
@@ -24,7 +24,7 @@ export default StyleSheet.create({
     borderRadius: 12
   },
   textDate: {
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 11,
     lineHeight: 16,
     letterSpacing: 0.5,
@@ -52,7 +52,7 @@ export default StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 14,
     lineHeight: 25,
     letterSpacing: 0.5,
@@ -80,7 +80,7 @@ export default StyleSheet.create({
     resizeMode: 'contain'
   },
   textMenu: {
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 16,
     lineHeight: 19,
     color: Colors.darkgrey
@@ -112,13 +112,13 @@ export default StyleSheet.create({
     padding: 2
   },
   textName: {
-    fontFamily: 'semiBold',
+    fontFamily: Fonts.type.semiBold,
     fontSize: 12,
     lineHeight: 18,
     color: Colors.grey
   },
   textMessage: {
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 14,
     lineHeight: 23,
     color: Colors.grey

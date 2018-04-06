@@ -1,5 +1,5 @@
 import { StyleSheet, Dimensions } from 'react-native'
-import { Colors } from '../../Themes'
+import { Colors, Fonts } from '../../Themes'
 
 export default StyleSheet.create({
   container: {
@@ -26,7 +26,7 @@ export default StyleSheet.create({
     marginLeft: 16,
     marginRight: 16,
     marginBottom: 10,
-    fontFamily: 'semiBold',
+    fontFamily: Fonts.type.semiBold,
     letterSpacing: 0.5,
     fontSize: 11,
     lineHeight: 14,
@@ -44,7 +44,7 @@ export default StyleSheet.create({
   textData: {
     flex: 1,
     marginLeft: 14,
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 14,
     lineHeight: 19,
     color: Colors.darkgrey

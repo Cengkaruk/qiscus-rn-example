@@ -1,5 +1,5 @@
-import { StyleSheet } from 'react-native'
-import { Colors } from '../../Themes'
+import { StyleSheet, Platform, Dimensions } from 'react-native'
+import { Colors, Fonts } from '../../Themes'
 
 export default StyleSheet.create({
   container: {
@@ -18,8 +18,14 @@ export default StyleSheet.create({
     resizeMode: 'contain',
     marginRight: 10
   },
+  iconSearch: {
+    height: 20,
+    width: 20,
+    resizeMode: 'contain',
+    marginRight: 10
+  },
   textName: {
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 14,
     lineHeight: 19,
     color: Colors.darkgrey
@@ -29,10 +35,31 @@ export default StyleSheet.create({
     marginLeft: 15,
     marginRight: 15,
     marginBottom: 8,
-    fontFamily: 'semiBold',
+    fontFamily: Fonts.type.semiBold,
     fontSize: 11,
     lineHeight: 14,
     letterSpacing: 0.5,
     color: Colors.grey
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+    borderBottomColor: Colors.border,
+    borderBottomWidth: 1,
+    padding: Platform.OS === 'ios' ? 15 : 10
+  },
+  input: {
+    flex: 1,
+    fontFamily: Fonts.type.regular,
+    fontSize: 14,
+    lineHeight: 25,
+    letterSpacing: 0.5,
+    color: Colors.grey
+  },
+  listGroupContainer: {
+    height: 70,
+    width: Dimensions.get('window').width,
+    backgroundColor: Colors.background
   }
 })

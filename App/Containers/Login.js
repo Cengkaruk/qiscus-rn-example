@@ -10,10 +10,13 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native'
+import FCM from 'react-native-fcm'
 
 import { Actions, ActionConst } from 'react-native-router-flux'
+import axios from 'axios'
 import { Images, Dictionary } from '../Themes'
 import qiscus from '../../libs/SDKCore'
+import { baseUri } from '../config'
 
 /**
  * import component
@@ -22,6 +25,7 @@ import { TextInputLogin, Button } from '../Components'
 
 import styles from './Styles/LoginStyles'
 
+I18n.locale = 'en'
 I18n.translations = Dictionary
 
 class Login extends React.Component {
@@ -36,6 +40,16 @@ class Login extends React.Component {
     }
   }
 
+  componentDidMount () {
+    qiscus.init({
+      AppId: 'sampleapp-65ghcsaysse',
+      options: {
+        loginSuccessCallback: (data) => this.successLogin(data), // if login / register is success
+        loginErrorCallback: (data) => this.errorLogin(data) // if login / register is failed
+      }
+    })
+  }
+
   renderLogo () {
     return (
       <View style={styles.logoContainer}>
@@ -48,6 +62,7 @@ class Login extends React.Component {
     const { email, displayName, key } = this.state
     return (
       <View style={{ flexDirection: 'column' }}>
+        <View style={{ marginTop: 20 }} />
         <TextInputLogin
           label={I18n.t('email')}
           value={email}
@@ -108,26 +123,50 @@ class Login extends React.Component {
     } else if (displayName.length < 1) {
       ToastAndroid.show(I18n.t('invalidDisplayName'), ToastAndroid.SHORT)
     } else {
-      qiscus.init({
-        AppId: 'sampleapp-65ghcsaysse',
-        options: {
-          loginSuccessCallback: (data) => this.successLogin(data), // if login / register is success
-          loginErrorCallback: (data) => this.errorLogin(data) // if login / register is failed
-        }
-      })
       this.setState({ loading: true }) // set the button to loading state
       qiscus.setUser(email, key, displayName, null)
     }
   }
 
   async successLogin (data) {
-    Actions.chatroom({
-      type: ActionConst.RESET, // reset the navigator to ListChat container
-      photo: data.results.user.avatar_url, // passing params to chat room container
-      email: this.state.email,
-      qiscus: qiscus
+    let platform = Platform.OS === 'ios' ? 'ios' : 'android'
+    let tokenType = Platform.OS === 'ios' ? 'ios device_token' : 'fcm_token'
+    FCM.requestPermissions({badge: false, sound: true, alert: true})
+
+    await FCM.getFCMToken().then(tokenFCM => {
+      if (tokenFCM !== null && tokenFCM !== undefined) {
+        console.warn('token: ', tokenFCM)
+      }
     })
-    AsyncStorage.setItem('token', data.results.user.token)
+
+    axios.post(baseUri + '/api/v2/mobile/set_user_device_token',
+      {
+        token: qiscus.userData.token,
+        device_token: tokenType,
+        device_platform: platform
+      }
+      , {
+        timeout: 5000
+      })
+      .then((response) => {
+        this.setState({
+          loading: false
+        })
+        // console.log(response)
+        Actions.chatroom({
+          type: ActionConst.RESET, // reset the navigator to ListChat container
+          photo: data.results.user.avatar_url, // passing params to chat room container
+          email: this.state.email,
+          qiscus: qiscus
+        })
+        AsyncStorage.setItem('token', data.results.user.token)
+      })
+      .catch((error) => {
+        this.setState({
+          loading: false
+        })
+        console.log('error: ', error)
+      })
   }
 
   errorLogin (data) {

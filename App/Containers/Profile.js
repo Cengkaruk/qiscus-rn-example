@@ -18,6 +18,7 @@ import { Header } from '../Components'
 
 import styles from './Styles/ProfileStyles'
 
+I18n.locale = 'en'
 I18n.translations = Dictionary
 
 class Profile extends React.Component {
@@ -31,15 +32,6 @@ class Profile extends React.Component {
 
   qiscus = this.props.qiscus
   emitter = this.props.emitter
-
-  getRoomInfo () {
-    // used to refresh profile after edit it
-    qiscus.getRoomsInfo({room_ids: [this.props.id]}).then(res => {
-      console.log('room info ', res.results.rooms_info.participants)
-    }, err => {
-      console.log(err)
-    })
-  }
 
   renderPhoto () {
     const { data, typeProfile } = this.state

@@ -14,6 +14,7 @@ import {
   BackHandler,
   Clipboard,
   Platform,
+  Keyboard,
   KeyboardAvoidingView
 } from 'react-native'
 import moment from 'moment'
@@ -28,6 +29,7 @@ import { Header, EmptyState, ListChat } from '../Components'
 
 import styles from './Styles/ChatListStyles'
 
+I18n.locale = 'en'
 I18n.translations = Dictionary
 
 class ChatList extends React.Component {
@@ -58,11 +60,13 @@ class ChatList extends React.Component {
       uriImageReplied: '', // uri replied message with image and caption
       isTyping: false,
       isOnline: false,
-      sendingMessage: false,
       dataGroup: {
         name: '',
         photo: ''
-      }
+      },
+      pendingMessage: false,
+      callback: true,
+      lastSeen: ''
     } 
   }
 
@@ -81,15 +85,43 @@ class ChatList extends React.Component {
     this.emitter.addListener('new message', (params) => this.newMessage(params))
     this.emitter.addListener('status', (params) => this.handleStatus(params))
     this.emitter.addListener('typing', (params) => this.handleTyping(params))
-    // this.emitter.addListener('delivered', (params) => console.log('delivered', params))
     this.emitter.addListener('read', (params) => this.handleReadMessage(params))
     this.loadRoom()
+  }
+
+  componentWillReceiveProps (nextProps) {
+    const { callback, type } = this.state
+    if (type === 'group') {
+      if (nextProps.callback !== callback) {
+        this.setState({
+          callback: nextProps.callback
+        })
+      }
+    }
   }
 
   loadRoom () {
     qiscus.getRoomById(this.props.id).then(data => {
       try {
-        const reversedData = data.comments.length > 0 ? [...data.comments].reverse() : []
+        let reversedData = data.comments.length > 0 ? [...data.comments].reverse() : []
+        let arrayFilter = []
+        let arrayDuplicate = []
+        for (let i = 0; i < reversedData.length; i++) {
+          let isDuplicate = false
+          for (let j = 0; j < reversedData.length; j++) {
+            if (i !== j && i > j) {
+              if (reversedData[i].unique_id === reversedData[j].unique_id) {
+                isDuplicate = true
+              }
+            }
+          }
+          if (!isDuplicate) {
+            let index = arrayDuplicate.map(function(val) { return val.unique_id; }).indexOf(reversedData[i].unique_id)
+            if (index < 0) {
+              arrayFilter.push(reversedData[i])
+            }
+          }
+        }
         if (this.props.typeRoom === 'group') {
           let tempDataGroup = {
             name: this.props.roomName,
@@ -100,13 +132,13 @@ class ChatList extends React.Component {
           })
         }
         this.setState({
-          data: reversedData,
+          data: arrayFilter,
           loading: false,
-          lastMessageDate: reversedData[0].timestamp,
+          lastMessageDate: arrayFilter[0].timestamp,
           type: this.props.typeRoom,
           photo: data.avatar,
-          lastCommentId: reversedData[reversedData.length - 1].id,
-          firstCommentId: reversedData[0].id,
+          lastCommentId: arrayFilter[arrayFilter.length - 1].id,
+          firstCommentId: arrayFilter[0].id,
           participants: data.participants
         })
       } catch (e) {
@@ -129,11 +161,9 @@ class ChatList extends React.Component {
 
   componentDidMount () {
     BackHandler.addEventListener('hardwareBackPress', () => this.backAndroid())
-    this.isMounted = true
   }
 
   componentWillUnmount () {
-    this.isMounted = false
     BackHandler.removeEventListener('hardwareBackPress', () => this.backAndroid())
   }
 
@@ -147,40 +177,48 @@ class ChatList extends React.Component {
     return true // to prevent apps to exit
   }
 
-  newMessage (data) {
+  async newMessage (data) {
     // handling new message
     if (this.state.isActive) {
       if (String(data.room_id_str) === String(this.state.id)) {
+        console.log('temp id new message: ', data.unique_temp_id)
+        let tempData = await [...this.state.data]
+        console.log('in array: ;', tempData[0].unique_id)
+        let index = tempData.map(function(uniq) { return uniq.unique_id; }).indexOf(data.unique_temp_id)
         const temp = {
-        "attachment": null,
-        "avatar": data.user_avatar,
-        "before_id": data.comment_before_id,
-        "date": data.timestamp,
-        "id": data.id,
-        "isDelivered": false,
-        "isFailed": false,
-        "isPending": false,
-        "isRead": false,
-        "isSent": false,
-        "is_deleted": false,
-        "message": data.message,
-        "payload": data.payload,
-        "status": "read",
-        "subtype": null,
-        "time": moment(data.timestamp).format('HH:mm A'),
-        "timestamp": data.timestamp,
-        "type": "text",
-        "unique_id": data.unique_temp_id,
-        "username_as": data.username,
-        "username_real": data.email
+          "attachment": null,
+          "avatar": data.user_avatar,
+          "before_id": data.comment_before_id,
+          "date": data.timestamp,
+          "id": data.id,
+          "isDelivered": true,
+          "isFailed": false,
+          "isPending": false,
+          "isRead": false,
+          "isSent": false,
+          "is_deleted": false,
+          "message": data.message,
+          "payload": data.payload,
+          "status": "read",
+          "subtype": null,
+          "time": moment(data.timestamp).format('HH:mm A'),
+          "timestamp": data.timestamp,
+          "type": "text",
+          "unique_id": data.unique_temp_id,
+          "username_as": data.username,
+          "username_real": data.email
+        }
+        if (index > -1) {
+          tempData[index] = temp
+        } else {
+          tempData.unshift(temp)
+        }
+        this.setState({
+          data: tempData,
+          lastMessageDate: moment(data.timestamp).format('YYYY-MM-DD')
+        })
       }
-      let tempData = [...this.state.data]
-      tempData.unshift(temp)
-      this.setState({
-        data: tempData ,
-        lastMessageDate: moment(data.timestamp).format('YYYY-MM-DD')
-      })
-      }
+      qiscus.readComment(this.state.id, data.id);
     }
   }
 
@@ -214,15 +252,22 @@ class ChatList extends React.Component {
     }
   }
 
-  handleStatus (params) {
+  async handleStatus (params) {
     if (this.state.isActive) {
       if (String(params).includes('1:')) {
         this.setState({
           isOnline: true
         })
-      } else {
+      } else if (String(params).includes('0:')) {
+        let tempTimestamp
+        if (String(params).includes('/s')) {
+          tempTimestamp = await String(params.substring(2, 9))
+        } else {
+          tempTimestamp = await String(params.substring(2, params.length))
+        }
         this.setState({
-          isOnline: false
+          isOnline: false,
+          lastSeen: I18n.t('lastSeen') + moment(parseInt(tempTimestamp)).format('HH:mm A')
         })
       }
     }
@@ -268,7 +313,8 @@ class ChatList extends React.Component {
           emitter: this.emitter,
           qiscus: this.qiscus,
           dataGroup: dataGroup,
-          id: this.state.id
+          id: this.state.id,
+          callback: this.state.callback
         })
         break
       default:
@@ -278,19 +324,21 @@ class ChatList extends React.Component {
 
   renderList () {
     return (
-      <FlatList
-        ref={ref => this.scrollView = ref}
-        style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 8, paddingBottom: 12 }}
-        data={this.state.data}
-        renderItem={this.renderitem}
-        keyExtractor={item => item.id}
-        inverted // to show data from last index -> first index
-        onEndReached={this.loadmore.bind(this)}
-        onEndReachedThreshold={0.1}
-        keyboardShouldPersistTaps='always'
-        showsVerticalScrollIndicator={false}
-      />
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <FlatList
+          ref={ref => this.scrollView = ref}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ padding: 8, paddingBottom: 12 }}
+          data={this.state.data}
+          renderItem={this.renderitem}
+          keyExtractor={item => item.id}
+          inverted // to show data from last index -> first index
+          onEndReached={this.loadmore.bind(this)}
+          onEndReachedThreshold={0.1}
+          keyboardShouldPersistTaps='always'
+          showsVerticalScrollIndicator={false}
+        />
+      </TouchableWithoutFeedback>
     )
   }
 
@@ -321,6 +369,7 @@ class ChatList extends React.Component {
         isRead={item.isRead}
         isSent={item.isSent}
         onLongPress={() => this.onMessagePressed(item)}
+        retryMessage={() => this.sendMessage(item)}
       />
     )
   }
@@ -381,7 +430,7 @@ class ChatList extends React.Component {
   renderReply () {
     const { nameUserReplied, messageReply, uriImageReplied } = this.state
     let messagePreview, renderRepliedMessage, renderRepliedImage, messageImage
-    let extImage = ['jpg','gif','jpeg','png', 'JPG', 'GIF', 'JPEG', 'PNG']
+    let extImage = ['.jpg','.gif','.jpeg','.png', '.JPG', '.GIF', '.JPEG', '.PNG']
     let isImage = extImage.find((data) => messageReply.includes(data))
     if ((isImage && messageReply.includes('[file]') || uriImageReplied !== '')) {
       messageImage = messageReply.substring(6, messageReply.length-7).trim()
@@ -447,7 +496,8 @@ class ChatList extends React.Component {
   }
 
   renderModalOptionMessage () {
-    const { messageOption } = this.state
+    const { messageOption, pendingMessage } = this.state
+    let menuReply = !pendingMessage ? this.renderMenu(Images.reply, I18n.t('reply')) : null
     return (
       <Modal
         animationType={'fade'}
@@ -459,8 +509,8 @@ class ChatList extends React.Component {
           <View style={styles.modalContainer}>
             <View style={{ flex: 1 }} />
             <View style={styles.optionContainer}>
-              {this.renderMenu(Images.reply, I18n.t('reply'))}
-              {this.renderMenu(Images.forward, I18n.t('forward'))}
+              {menuReply}
+              {/* {this.renderMenu(Images.forward, I18n.t('forward'))} */}
               {this.renderMenu(Images.copy, I18n.t('copy'))}
               <View style={styles.border} />
               {this.renderMenu(Images.cancel, I18n.t('cancel'))}
@@ -536,7 +586,7 @@ class ChatList extends React.Component {
   }
 
   async onMessagePressed (item) {
-    let tempMessage, uriImage
+    let tempMessage, uriImage, tempName, pending
     if (item.payload === null) {
       tempMessage = await item.message
       uriImage = ''
@@ -549,13 +599,20 @@ class ChatList extends React.Component {
         uriImage = await item.message
       }
     }
+    tempName = item.username_as === undefined ? this.state.name : item.username_as
+    if (item.isPending) {
+      pending = true
+    } else {
+      pending = false
+    }
     this.setState({
       messageOption: true,
       idReply: item.id,
       emailUserReplied: item.username_real,
-      nameUserReplied: item.username_as,
+      nameUserReplied: tempName,
       messageReply: tempMessage,
-      uriImageReplied: uriImage
+      uriImageReplied: uriImage,
+      pendingMessage: pending
     })
   }
 
@@ -586,13 +643,16 @@ class ChatList extends React.Component {
     }
   }
 
-  sendMessage () {
-    const { id, message, firstCommentId, isReplying, nameUserReplied, emailUserReplied, messageReply, idReply, sendingMessage } = this.state
-    if (!sendingMessage) {
+  /**
+   * send message perlu temp uniq id
+   */
+
+  async sendMessage (item) {
+    const { id, message, firstCommentId, isReplying, nameUserReplied, emailUserReplied, messageReply, idReply, data } = this.state
+    let tempData = [...data]
+    let temp
+    if (item === undefined || item === null) {
       if (message.length > 0) {
-        this.setState({
-          sendingMessage: true
-        })
         if (isReplying) {
           const payload = {
             text: message,
@@ -603,23 +663,190 @@ class ChatList extends React.Component {
             replied_comment_sender_username: nameUserReplied,
             replied_comment_type: 'text'
           }
-          qiscus.sendComment(id, message, null, 'reply', JSON.stringify(payload))
+          let tempUniqId = String(moment().unix()) + String(Math.random(1000))
+          temp = await {
+            "attachment": null,
+            "avatar": this.state.photo,
+            "before_id": -1,
+            "date": -1,
+            "id": String(moment().unix()),
+            "isDelivered": false,
+            "isFailed": false,
+            "isPending": true,
+            "isRead": false,
+            "isSent": false,
+            "is_deleted": false,
+            "message": message,
+            "payload": payload,
+            "status": "read",
+            "subtype": null,
+            "time": moment().format('HH:mm A'),
+            "timestamp": moment().unix(),
+            "type": 'reply',
+            "unique_id": tempUniqId,
+            "username_as": this.state.name,
+            "username_real": this.state.email
+          }
+          tempData.unshift(temp)
+          this.setState({
+            data: tempData,
+            message: '',
+            isReplying: false
+          })
+          qiscus.sendComment(id, message, tempUniqId, 'reply', JSON.stringify(payload))
             .then(() => {
-              this.setState({ message: '', isReplying: false, sendingMessage: false })
               qiscus.publishTyping(0)
             })
-            .catch((e) => ToastAndroid.show(e, ToastAndroid.SHORT))
+            .catch((e) => {
+              let tempArrayFailedData = [...tempData]
+              let failedTempData = tempArrayFailedData[0]
+              failedTempData.isPending = false
+              failedTempData.isFailed = true
+              tempArrayFailedData[0] = failedTempData
+              this.setState({
+                data: tempArrayFailedData
+              })
+            })
         } else {
-          qiscus.sendComment(id, message)
+          let tempUniqId = String(moment().unix()) + String(Math.random(1000))
+          temp = await {
+            "attachment": null,
+            "avatar": this.state.photo,
+            "before_id": -1,
+            "date": -1,
+            "id": String(moment().unix()),
+            "isDelivered": false,
+            "isFailed": false,
+            "isPending": true,
+            "isRead": false,
+            "isSent": false,
+            "is_deleted": false,
+            "message": message,
+            "payload": null,
+            "status": "read",
+            "subtype": null,
+            "time": moment().format('HH:mm A'),
+            "timestamp": moment().unix(),
+            "type": "text",
+            "unique_id": tempUniqId,
+            "username_as": this.state.name,
+            "username_real": this.state.email
+          }
+          tempData.unshift(temp)
+          this.setState({
+            data: tempData,
+            message: '',
+            isReplying: false
+          })
+          qiscus.sendComment(id, message, tempUniqId)
           .then(() => {
-            this.setState({ message: '', isReplying: false, sendingMessage: false })
             qiscus.publishTyping(0)
           })
-          .catch((e) => ToastAndroid.show(e, ToastAndroid.SHORT))
+          .catch((e) => {
+            let tempArrayFailedData = [...tempData]
+            let failedTempData = tempArrayFailedData[0]
+            failedTempData.isPending = false
+            failedTempData.isFailed = true
+            tempArrayFailedData[0] = failedTempData
+            this.setState({
+              data: tempArrayFailedData
+            })
+          })
         }
       }
     } else {
-      ToastAndroid.show(I18n.t('waitingSentMessage'), ToastAndroid.SHORT)
+      if (item.message.length > 0) {
+        if (item.payload === undefined || item.payload === null) {
+          temp = {
+            "attachment": null,
+            "avatar": this.state.photo,
+            "before_id": -1,
+            "date": -1,
+            "id": item.id,
+            "isDelivered": false,
+            "isFailed": false,
+            "isPending": true,
+            "isRead": false,
+            "isSent": false,
+            "is_deleted": false,
+            "message": item.message,
+            "payload": null,
+            "status": "read",
+            "subtype": null,
+            "time": item.time,
+            "timestamp": item.timestamp,
+            "type": 'reply',
+            "unique_id": item.unique_id,
+            "username_as": this.state.name,
+            "username_real": this.state.email
+          }
+          let index = tempData.map(function(uniq) { return uniq.unique_id; }).indexOf(item.unique_id)
+          tempData[index].isFailed = false
+          tempData[index].isPending = true
+          this.setState({
+            data: tempData
+          })
+          qiscus.sendComment(id, item.message, item.unique_id)
+          .then(() => {
+            qiscus.publishTyping(0)
+          })
+          .catch((e) => {
+            let tempArrayFailedData = [...tempData]
+            let failedTempData = tempArrayFailedData[index]
+            failedTempData.isPending = false
+            failedTempData.isFailed = true
+            tempArrayFailedData[index] = failedTempData
+            this.setState({
+              data: tempArrayFailedData
+            })
+          })
+        } else {
+          const payload = item.payload
+          temp = {
+            "attachment": null,
+            "avatar": this.state.photo,
+            "before_id": -1,
+            "date": -1,
+            "id": item.id,
+            "isDelivered": false,
+            "isFailed": false,
+            "isPending": true,
+            "isRead": false,
+            "isSent": false,
+            "is_deleted": false,
+            "message": item.message,
+            "payload": payload,
+            "status": "read",
+            "subtype": null,
+            "time": item.time,
+            "timestamp": item.timestamp,
+            "type": 'reply',
+            "unique_id": item.unique_id,
+            "username_as": this.state.name,
+            "username_real": this.state.email
+          }
+          let index = tempData.map(function(uniq) { return uniq.unique_id; }).indexOf(item.unique_id)
+          tempData[index].isFailed = false
+          tempData[index].isPending = true
+          this.setState({
+            data: tempData
+          })
+          qiscus.sendComment(id, item.message, item.unique_id, 'reply', JSON.stringify(payload))
+            .then(() => {
+              qiscus.publishTyping(0)
+            })
+            .catch((e) => {
+              let tempArrayFailedData = [...tempData]
+              let failedTempData = tempArrayFailedData[index]
+              failedTempData.isPending = false
+              failedTempData.isFailed = true
+              tempArrayFailedData[index] = failedTempData
+              this.setState({
+                data: tempArrayFailedData
+              })
+            })
+        }
+      }
     }
   }
 
@@ -650,7 +877,7 @@ class ChatList extends React.Component {
   }
 
   render () {
-    const { data, loading, photo, isTyping, isOnline } = this.state
+    const { data, loading, photo, isTyping, isOnline, type, lastSeen } = this.state
     let view, renderDate, renderInput, subtitle
     if (loading) {
       view = (
@@ -662,11 +889,11 @@ class ChatList extends React.Component {
       renderInput = this.renderInput()
     }
     if (isTyping) {
-      subtitle = I18n.t('typing')
+      subtitle = type === 'single' ? I18n.t('typing') : I18n.t('groupTyping')
     } else if (isOnline) {
       subtitle = I18n.t('online')
     } else {
-      subtitle = ''
+      subtitle = lastSeen
     }
     return (
       <View style={styles.container}>

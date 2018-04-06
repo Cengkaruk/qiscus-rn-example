@@ -1,5 +1,5 @@
-import { StyleSheet } from 'react-native'
-import { Colors } from '../../Themes'
+import { StyleSheet, Platform } from 'react-native'
+import { Colors, Fonts } from '../../Themes'
 
 export default StyleSheet.create({
   container: {
@@ -7,7 +7,7 @@ export default StyleSheet.create({
     flex: 1
   },
   label: {
-    fontFamily: 'semiBold',
+    fontFamily: Fonts.type.semiBold,
     fontSize: 14,
     lineHeight: 14,
     letterSpacing: 0.5,
@@ -16,14 +16,16 @@ export default StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    marginTop: 5
+    marginTop: Platform.OS === 'ios' ? 10 : 0,
+    marginBottom: Platform.OS === 'ios' ? 10 : 0
   },
   input: {
     flex: 1,
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     color: Colors.grey,
     fontSize: 14,
     lineHeight: 19,
+    marginBottom: Platform.OS === 'ios' ? 5 : -10,
     letterSpacing: 0.2
   }
 })

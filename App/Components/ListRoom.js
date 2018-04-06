@@ -14,6 +14,7 @@ import I18n from 'react-native-i18n'
 
 import { Dictionary, Images } from '../Themes'
 
+I18n.locale = 'en'
 I18n.translations = Dictionary
 
 export default class ListRoom extends React.PureComponent {
@@ -53,7 +54,7 @@ export default class ListRoom extends React.PureComponent {
       )
     }
 
-    let extImage = ['jpg','gif','jpeg','png', 'JPG', 'GIF', 'JPEG', 'PNG']
+    let extImage = ['.jpg','.gif','.jpeg','.png', '.JPG', '.GIF', '.JPEG', '.PNG']
     let isImage = extImage.find((data) => this.props.lastMessage.includes(data))
     if (isImage) {
       lastMessage = I18n.t('image')
@@ -70,13 +71,13 @@ export default class ListRoom extends React.PureComponent {
         onPress={() => this.props.onPress()}
       >
         <ImageLoad
-            style={styles.photo}
-            source={{ uri: this.props.avatar }}
-            isShowActivity={false}
-            resizeMode='cover'
-            borderRadius={20}
-            placeholderSource={Images.loading}
-            placeholderStyle={styles.photo}
+          style={styles.photo}
+          source={{ uri: this.props.avatar }}
+          isShowActivity={false}
+          resizeMode='cover'
+          borderRadius={20}
+          placeholderSource={Images.loading}
+          placeholderStyle={styles.photo}
         />
         <View style={styles.item}>
           <View style={{ flexDirection: 'column', flex: 1, marginRight: 15 }}>

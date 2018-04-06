@@ -1,5 +1,5 @@
 import { StyleSheet, Dimensions } from 'react-native'
-import { Colors } from '../../Themes'
+import { Colors, Fonts } from '../../Themes'
 
 export default StyleSheet.create({
   senderContainer: {
@@ -10,7 +10,7 @@ export default StyleSheet.create({
     marginTop: 10
   },
   textDate: {
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 12,
     lineHeight: 14,
     color: Colors.label
@@ -24,13 +24,13 @@ export default StyleSheet.create({
     margin: 3
   },
   textMessage: {
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 14,
     lineHeight: 23,
     color: Colors.grey
   },
   name: {
-    fontFamily: 'semiBold',
+    fontFamily: Fonts.type.semiBold,
     fontSize: 12,
     marginLeft: 4,
     lineHeight: 14,
@@ -71,7 +71,7 @@ export default StyleSheet.create({
     resizeMode: 'contain'
   },
   textFailed: {
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 12,
     lineHeight: 15,
     color: Colors.red
@@ -105,7 +105,7 @@ export default StyleSheet.create({
     paddingLeft: 10
   },
   replied: {
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 11,
     lineHeight: 19
   },

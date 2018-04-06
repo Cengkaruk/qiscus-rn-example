@@ -8,6 +8,7 @@ import PropTypes from 'prop-types'
 
 import styles from './Styles/HeaderStyles'
 
+I18n.locale = 'en'
 I18n.translations = Dictionary
 
 export default class Header extends React.Component {
@@ -94,20 +95,38 @@ export default class Header extends React.Component {
         </View>
       )
     } else {
-      if (this.props.subtitle === I18n.t('online') || this.props.subtitle === I18n.t('typing')) {
-        subtitle = (
-          <Text style={styles.textOnline}>
-            {this.props.subtitle}
-          </Text>
-        )
-      } else if (this.props.subtitle === '') {
-        subtitle = null
-      } else {
-        subtitle = (
-          <Text style={styles.textSubtitle}>
-            {this.props.subtitle}
-          </Text>
-        )
+      switch (this.props.subtitle) {
+        case I18n.t('online'):
+          subtitle = (
+            <Text style={styles.textOnline}>
+              {this.props.subtitle}
+            </Text>
+          )
+          break
+        case I18n.t('typing'):
+          subtitle = (
+            <Text style={styles.textOnline}>
+              {this.props.subtitle}
+            </Text>
+          )
+          break
+        case I18n.t('groupTyping'):
+          subtitle = (
+            <Text style={styles.textOnline}>
+              {this.props.subtitle}
+            </Text>
+          )
+          break
+        case '':
+          subtitle = null
+          break
+        default:
+          subtitle = (
+            <Text style={styles.textSubtitle}>
+              {this.props.subtitle}
+            </Text>
+          )
+          break
       }
       title = (
         <View style={styles.title}>
@@ -143,7 +162,7 @@ export default class Header extends React.Component {
       content = (
         <TouchableOpacity onPress={() => this.props.onRightPress()}>
           <ImageLoad
-            style={[styles.imageLeft]}
+            style={styles.imageLeft}
             source={image}
             isShowActivity={false}
             resizeMode={roundImage.resizeMode}

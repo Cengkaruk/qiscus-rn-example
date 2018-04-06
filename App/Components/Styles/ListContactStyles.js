@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native'
-import { Colors } from '../../Themes'
+import { Colors, Fonts } from '../../Themes'
 
 export default StyleSheet.create({
   itemContainer: {
@@ -11,22 +11,28 @@ export default StyleSheet.create({
   },
   photo: {
     height: 30,
-    width: 30
+    width: 30,
+    marginTop: -5
   },
   item: {
     flexDirection: 'row',
     flex: 1,
     alignItems: 'center',
     paddingTop: 10,
-    paddingBottom: 10,
+    paddingBottom: 15,
     marginLeft: 15,
     borderBottomColor: Colors.border,
     borderBottomWidth: 1
   },
   textName: {
-    fontFamily: 'regular',
+    fontFamily: Fonts.type.regular,
     fontSize: 14,
     lineHeight: 19,
     color: Colors.black
+  },
+  iconCheck: {
+    height: 20,
+    width: 20,
+    resizeMode: 'contain'
   }
 })

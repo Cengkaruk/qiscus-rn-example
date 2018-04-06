@@ -15,6 +15,7 @@ import ImageLoad from 'react-native-image-placeholder'
 
 import { Dictionary, Images } from '../Themes'
 
+I18n.locale = 'en'
 I18n.translations = Dictionary
 
 export default class ListMember extends React.PureComponent {

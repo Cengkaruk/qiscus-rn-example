@@ -8,7 +8,8 @@ import styles from './Styles/EmptyStateStyles'
 import I18n from 'react-native-i18n'
 import { Button } from '../Components'
 
-I18n.translations = Dictionary
+I18n.locale = 'en'
+I18n.translations = Dictionary 
 
 export default class EmptyState extends React.Component {
   constructor (props) {
