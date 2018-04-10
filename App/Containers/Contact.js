@@ -270,11 +270,17 @@ class Contact extends React.Component {
   }
 
   removeMember (index) {
-    const { dataGroup } = this.state
+    const { dataGroup, data } = this.state
+    let tempData = [...data]
     let tempDataGroup = [...dataGroup]
+    let indexData = data.indexOf(dataGroup[index])
+
     tempDataGroup.splice(index, 1)
+    tempData[indexData].isChecking = false
+    
     this.setState({
-      dataGroup: tempDataGroup
+      dataGroup: tempDataGroup,
+      data: tempData
     })
   }
 

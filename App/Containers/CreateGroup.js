@@ -164,7 +164,7 @@ class CreateGroup extends React.Component {
   async menuHandler (label) {
     switch (label) {
       case I18n.t('cancel'):
-        this.setState({ openMedia: false })
+        this.setState({ openModal: false })
         break
       case I18n.t('camera'):
         this.openMedia('camera')
