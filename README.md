@@ -39,7 +39,7 @@ yarn start -- --reset-cache
 
 #### `react-native run-ios`
 
-Like `react-native start`, but also attempts to open your app in the iOS Simulator if you're on a Mac and have it installed.
+Like `react-native start`, but also attempts to open your app in the iOS Simulator if you're on a Mac and have it installed. But in ios need install dependency from pod, so we need to go to ios folder and run command `pod install`
 
 #### `react-native run-android`
 
