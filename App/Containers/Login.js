@@ -130,12 +130,12 @@ class Login extends React.Component {
 
   async successLogin (data) {
     let platform = Platform.OS === 'ios' ? 'ios' : 'android'
-    let tokenType = Platform.OS === 'ios' ? 'ios device_token' : 'fcm_token'
+    let tokenType = null
     FCM.requestPermissions({badge: false, sound: true, alert: true})
 
     await FCM.getFCMToken().then(tokenFCM => {
       if (tokenFCM !== null && tokenFCM !== undefined) {
-        console.warn('token: ', tokenFCM)
+        tokenType = tokenFCM
       }
     })
 
@@ -149,10 +149,10 @@ class Login extends React.Component {
         timeout: 5000
       })
       .then((response) => {
+        console.warn('token: ', tokenType)
         this.setState({
           loading: false
         })
-        // console.log(response)
         Actions.chatroom({
           type: ActionConst.RESET, // reset the navigator to ListChat container
           photo: data.results.user.avatar_url, // passing params to chat room container

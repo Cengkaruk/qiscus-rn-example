@@ -69,10 +69,12 @@ class ChatRoom extends React.Component {
     this.loadRoom()
 
     FCM.getInitialNotification().then(notif => {
-      console.log(notif)
-      const data = {
-        click_action: notif.type,
-        body: notif
+      if (notif !== undefined && notif !== null) {
+        console.log(notif)
+        const data = {
+          click_action: notif.type,
+          body: notif
+        }
       }
     })
   }
