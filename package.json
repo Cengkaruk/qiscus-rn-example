@@ -9,7 +9,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "moment": "^2.21.0",
-    "qiscus-sdk-core": "git://github.com/qiscus/qiscus-sdk-web-core.git",
+    "qiscus-sdk-core": "git://github.com/qiscus/qiscus-sdk-web-core.git#12ca4d5",
     "react": "16.2.0",
     "react-native": "0.52",
     "react-native-fcm": "^14.1.3",

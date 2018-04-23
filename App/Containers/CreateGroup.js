@@ -8,6 +8,7 @@ import {
   FlatList,
   TextInput,
   Modal,
+  ToastAndroid,
   TouchableWithoutFeedback
 } from 'react-native'
 import axios from 'axios'
@@ -37,7 +38,8 @@ class CreateGroup extends React.Component {
       photo: '',
       loading: false,
       openModal: false,
-      email: ''
+      email: '',
+      errorName: false
     }
   }
 
@@ -52,9 +54,18 @@ class CreateGroup extends React.Component {
   }
 
   renderInfoGroup () {
-    const { name, photo } = this.state
+    const { name, photo, errorName } = this.state
     let img = photo.length > 0 ? { uri: photo }: Images.groupAvatar
     let style = photo.length > 0 ? { resizeMode: 'cover' } : {}
+    let errorMessage = null
+    if (errorName) {
+      errorMessage =
+      <Text style={[styles.labelName, { color: Colors.red, marginTop: 5, marginBottom: 0 }]}>
+        {I18n.t('errorGroup')}
+      </Text>
+    } else if(!errorName) {
+      errorMessage = null
+    }
     return (
       <View style={styles.infoContainer}>
         <TouchableOpacity
@@ -72,12 +83,13 @@ class CreateGroup extends React.Component {
               style={styles.input}
               value={name}
               onChangeText={(text) => {
-                this.setState({ name: text })}
+                this.setState({ name: text, errorName: false })}
               }
               autoCapitalize='none'
               autoCorrect={false}
             />
           </View>
+          {errorMessage}
         </View>
       </View>
     )
@@ -192,7 +204,8 @@ class CreateGroup extends React.Component {
         }
         this.setState({
           photo: response.uri,
-          openModal: false
+          openModal: false,
+          errorName: false
         })
       })
     } else {
@@ -209,7 +222,8 @@ class CreateGroup extends React.Component {
         }
         this.setState({
           photo: result.uri,
-          openModal: false
+          openModal: false,
+          errorName: false
         })
       })
     }
@@ -217,25 +231,31 @@ class CreateGroup extends React.Component {
 
   uploadImage () {
     const { data, name, photo } = this.state
-    let tempData = []
-    for (let i = 0; i < data.length; i++) {
-      tempData.push(data[i].email)
-    }
-    if (name !== '' && photo.length > 0) {
-      this.setState({ loading: true })
-        const form = new FormData()
-        form.append('file', { uri: photo, type: 'image/jpg', name: 'image.jpg' })
-        axios.post(baseUriUploadImage,
-          form
-        ,{
-          timeout: 10000
-        })
-        .then((response) => {
-          this.createGroup(tempData, name, response.data.results.file.url)
-        })
-        .catch(function (error) {
-          ToastAndroid.show(error.message, ToastAndroid.SHORT)
-        })
+    if (name.length < 1 || photo.length === 0) {
+      this.setState({
+        errorName: true
+      })
+    } else {
+      let tempData = []
+      for (let i = 0; i < data.length; i++) {
+        tempData.push(data[i].email)
+      }
+      if (name !== '' && photo.length > 0) {
+        this.setState({ loading: true })
+          const form = new FormData()
+          form.append('file', { uri: photo, type: 'image/jpg', name: 'image.jpg' })
+          axios.post(baseUriUploadImage,
+            form
+          ,{
+            timeout: 50000
+          })
+          .then((response) => {
+            this.createGroup(tempData, name, response.data.results.file.url)
+          })
+          .catch(function (error) {
+            ToastAndroid.show(error.message, ToastAndroid.SHORT)
+          })
+      }
     }
   }
 
