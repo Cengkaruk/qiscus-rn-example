@@ -186,7 +186,7 @@ class Media extends React.Component {
         axios.post(baseUriUploadImage,
           form
         ,{
-          timeout: 10000
+          timeout: 50000
         })
         .then((response) => {
           this.sendMessage(response.data.results.file.url)

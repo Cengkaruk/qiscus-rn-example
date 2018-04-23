@@ -181,44 +181,74 @@ class ChatList extends React.Component {
     // handling new message
     if (this.state.isActive) {
       if (String(data.room_id_str) === String(this.state.id)) {
-        console.log('temp id new message: ', data.unique_temp_id)
-        let tempData = await [...this.state.data]
-        console.log('in array: ;', tempData[0].unique_id)
-        let index = tempData.map(function(uniq) { return uniq.unique_id; }).indexOf(data.unique_temp_id)
-        const temp = {
-          "attachment": null,
-          "avatar": data.user_avatar,
-          "before_id": data.comment_before_id,
-          "date": data.timestamp,
-          "id": data.id,
-          "isDelivered": true,
-          "isFailed": false,
-          "isPending": false,
-          "isRead": false,
-          "isSent": false,
-          "is_deleted": false,
-          "message": data.message,
-          "payload": data.payload,
-          "status": "read",
-          "subtype": null,
-          "time": moment(data.timestamp).format('HH:mm A'),
-          "timestamp": data.timestamp,
-          "type": "text",
-          "unique_id": data.unique_temp_id,
-          "username_as": data.username,
-          "username_real": data.email
-        }
-        if (index > -1) {
-          tempData[index] = temp
+        if (this.state.data.length > 0) {
+          let tempData = await [...this.state.data]
+          let index = tempData.map(function(uniq) { return uniq.unique_id; }).indexOf(data.unique_temp_id)
+          const temp = {
+            "attachment": null,
+            "avatar": data.user_avatar,
+            "before_id": data.comment_before_id,
+            "date": data.timestamp,
+            "id": data.id,
+            "isDelivered": true,
+            "isFailed": false,
+            "isPending": false,
+            "isRead": false,
+            "isSent": false,
+            "is_deleted": false,
+            "message": data.message,
+            "payload": data.payload,
+            "status": "read",
+            "subtype": null,
+            "time": moment(data.timestamp).format('HH:mm A'),
+            "timestamp": data.timestamp,
+            "type": "text",
+            "unique_id": data.unique_temp_id,
+            "username_as": data.username,
+            "username_real": data.email
+          }
+          if (index > -1) {
+            tempData[index] = temp
+          } else {
+            tempData.unshift(temp)
+          }
+          this.setState({
+            data: tempData,
+            lastMessageDate: moment(data.timestamp).format('YYYY-MM-DD')
+          })
         } else {
-          tempData.unshift(temp)
+          let tempData = []
+          const temp = {
+            "attachment": null,
+            "avatar": data.user_avatar,
+            "before_id": data.comment_before_id,
+            "date": data.timestamp,
+            "id": data.id,
+            "isDelivered": true,
+            "isFailed": false,
+            "isPending": false,
+            "isRead": false,
+            "isSent": false,
+            "is_deleted": false,
+            "message": data.message,
+            "payload": data.payload,
+            "status": "read",
+            "subtype": null,
+            "time": moment(data.timestamp).format('HH:mm A'),
+            "timestamp": data.timestamp,
+            "type": "text",
+            "unique_id": data.unique_temp_id,
+            "username_as": data.username,
+            "username_real": data.email
+          }
+          tempData.push(temp)
+          this.setState({
+            data: tempData,
+            lastMessageDate: moment(data.timestamp).format('YYYY-MM-DD')
+          })
         }
-        this.setState({
-          data: tempData,
-          lastMessageDate: moment(data.timestamp).format('YYYY-MM-DD')
-        })
+        qiscus.readComment(this.state.id, data.id);
       }
-      qiscus.readComment(this.state.id, data.id);
     }
   }
 
@@ -277,11 +307,13 @@ class ChatList extends React.Component {
    * to view date when last message received
    */
   renderDate () {
+    let date = String(moment(this.state.lastMessageDate).format('dddd, MMMM DD, YYYY').toUpperCase())
+    if (date.toLowerCase().includes('invalid')) return null
     return (
       <View style={styles.dateContainer}>
         <View style={styles.date}>
           <Text style={styles.textDate}>
-            {String(moment(this.state.lastMessageDate).format('dddd, MMMM DD, YYYY').toUpperCase())}
+            {date}
           </Text>
         </View>
       </View>
@@ -893,7 +925,7 @@ class ChatList extends React.Component {
     } else if (isOnline) {
       subtitle = I18n.t('online')
     } else {
-      subtitle = lastSeen
+      subtitle = lastSeen.toLowerCase().includes('invalid') ? '' : lastSeen
     }
     return (
       <View style={styles.container}>
