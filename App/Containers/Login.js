@@ -129,7 +129,7 @@ class Login extends React.Component {
   }
 
   async successLogin (data) {
-    let platform = Platform.OS === 'ios' ? 'ios' : 'android'
+    let platform = Platform.OS === 'ios' ? 'ios_fcm' : 'android'
     let tokenType = null
     FCM.requestPermissions({badge: false, sound: true, alert: true})
 
