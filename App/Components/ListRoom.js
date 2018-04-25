@@ -59,7 +59,7 @@ export default class ListRoom extends React.PureComponent {
     if (isImage) {
       lastMessage = I18n.t('image')
     } else if (this.props.lastMessage.includes('[file]')) {
-      lastMessage = I18n.t('link')
+      lastMessage = I18n.t('fileAttachment')
     } else {
       lastMessage = this.props.lastMessage
     }

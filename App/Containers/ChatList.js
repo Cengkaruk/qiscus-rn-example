@@ -882,7 +882,8 @@ class ChatList extends React.Component {
     }
   }
 
-  openMedia (type) {
+  async openMedia (type) {
+    let reply = await this.state.isReplying
     Actions.media({
       type: ActionConst.PUSH,
       typeAttach: type,
@@ -890,9 +891,12 @@ class ChatList extends React.Component {
       nameUserReplied: this.state.nameUserReplied,
       emailUserReplied: this.state.emailUserReplied,
       messageReply: this.state.messageReply,
-      isReplying: this.state.isReplying,
+      isReplying: reply,
       qiscus: this.props.qiscus,
       id: this.state.id
+    })
+    this.setState({
+      isReplying: false
     })
   }
 

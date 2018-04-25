@@ -25,6 +25,7 @@ export default {
     cancel: 'Cancel',
     image: 'image',
     link: 'link',
+    fileAttachment: 'file attachment',
     messageCopied: 'Message copied',
     serverError: 'Server error',
     camera: 'Take Photo',
