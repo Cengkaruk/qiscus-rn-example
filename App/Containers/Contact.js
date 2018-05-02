@@ -275,13 +275,15 @@ class Contact extends React.Component {
     let tempDataGroup = [...dataGroup]
     let indexData = data.indexOf(dataGroup[index])
 
-    tempDataGroup.splice(index, 1)
-    tempData[indexData].isChecking = false
+    if (tempData[indexData]) {
+      tempData[indexData].isChecking = false
+      tempDataGroup.splice(index, 1)
     
-    this.setState({
-      dataGroup: tempDataGroup,
-      data: tempData
-    })
+      this.setState({
+        dataGroup: tempDataGroup,
+        data: tempData
+      })
+    }
   }
 
   async openChat (result) {
