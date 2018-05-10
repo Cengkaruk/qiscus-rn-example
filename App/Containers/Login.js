@@ -149,17 +149,17 @@ class Login extends React.Component {
         timeout: 5000
       })
       .then((response) => {
-        console.warn('token: ', tokenType)
+        // console.warn('token: ', tokenType)
         this.setState({
           loading: false
         })
         Actions.chatroom({
           type: ActionConst.RESET, // reset the navigator to ListChat container
-          photo: data.results.user.avatar_url, // passing params to chat room container
+          photo: data.user.avatar_url, // passing params to chat room container
           email: this.state.email,
           qiscus: qiscus
         })
-        AsyncStorage.setItem('token', data.results.user.token)
+        AsyncStorage.setItem('token', data.user.token)
       })
       .catch((error) => {
         this.setState({
