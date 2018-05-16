@@ -46,6 +46,32 @@ FCM.on(FCMEvent.Notification, async (notif) => {
   if (notif.opened_from_tray) {
     // if notification click from tray
   }
+
+  FCM.presentLocalNotification({
+    id: new Date().valueOf().toString(),
+    title: notif.payload.room_name,
+    body: notif.payload.message,
+    sound: "default",
+    priority: "high",
+    click_action: "com.qiscus.chat.sample",
+    badge: 10,
+    number: 10,
+    ticker: notif.payload.room_name,
+    auto_cancel: true,
+    large_icon: notif.payload.user_avatar,
+    icon: "ic_launcher",
+    big_text: notif.payload.message,
+    sub_text: notif.payload.message,
+    color: "red",
+    vibrate: 300,
+    wake_screen: true,
+    group: "group",
+    picture: "https://google.png",
+    ongoing: true,
+    my_custom_data:'my_custom_field_value',
+    lights: true,
+    show_in_foreground: true
+  })
 })
 
 class ChatRoom extends React.Component {
