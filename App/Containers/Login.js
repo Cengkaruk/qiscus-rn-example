@@ -16,7 +16,7 @@ import { Actions, ActionConst } from 'react-native-router-flux'
 import axios from 'axios'
 import { Images, Dictionary } from '../Themes'
 import qiscus from '../../libs/SDKCore'
-import { baseUri } from '../config'
+import { appId, baseUri } from '../config'
 
 /**
  * import component
@@ -42,7 +42,7 @@ class Login extends React.Component {
 
   componentDidMount () {
     qiscus.init({
-      AppId: 'sampleapp-65ghcsaysse',
+      AppId: appId,
       options: {
         loginSuccessCallback: (data) => this.successLogin(data), // if login / register is success
         loginErrorCallback: (data) => this.errorLogin(data) // if login / register is failed

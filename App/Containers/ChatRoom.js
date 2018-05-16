@@ -13,7 +13,7 @@ import { Actions, ActionConst } from 'react-native-router-flux'
 import FCM, {FCMEvent} from 'react-native-fcm'
 
 import qiscus from '../../libs/SDKCore'
-
+import { appId } from '../config'
 import { Images, Dictionary, Colors } from '../Themes'
 
 /**
@@ -81,7 +81,7 @@ class ChatRoom extends React.Component {
 
   init () {
     qiscus.init({
-      AppId: 'sampleapp-65ghcsaysse',
+      AppId: appId,
       options: {
         newMessagesCallback: (comments) => {
           this.loadRoom()
