@@ -8,6 +8,37 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:171341190722:android:079fe73604ecc130",
+        "android_client_info": {
+          "package_name": "com.qiscus.chat.ngobrel"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "171341190722-6ma5nkfrff181uk1l9dlnt1gif1p0n0v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLnqFncAb-WyqxfxFTc92SckvOHx_3ukk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:171341190722:android:aac109c8d7da1dc8",
         "android_client_info": {
           "package_name": "com.qiscus.chat.sample"
